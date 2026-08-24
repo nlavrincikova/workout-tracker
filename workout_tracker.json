@@ -1,0 +1,2112 @@
+{
+  "name": "fitness_exercise_catalog",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -416,
+        0
+      ],
+      "id": "fc6093bc-e6ee-4c85-90e4-adbfc2e34732",
+      "name": "When chat message received",
+      "webhookId": "REDACTED-REGENERATED-ON-IMPORT"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        160
+      ],
+      "id": "d654a658-ca6a-4e4c-be63-673b4359c15f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "n57q0EDgVOePyZCV",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 14
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        176
+      ],
+      "id": "dd4c890a-c866-4def-9499-9e515f852265",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2204c41d-8f3e-4e46-8472-2dc9b4730f44",
+              "name": "exercise_name_normalized",
+              "value": "={{ $json.exercise_name.toLowerCase().trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "f97946cc-770b-4117-860d-eb77e9fe1579",
+      "name": "edit_exercise_name"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "exercise_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1456,
+        0
+      ],
+      "id": "3dbb5ca7-2d8d-47c7-9365-edf0fbdbfba6",
+      "name": "get_exercise_list",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "exercise_name",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "6c67e6cf-f972-4311-9ee8-2190884fb535",
+      "name": "split_out_exercise"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the 8 Exercises from your normalization node\nconst aiExercises = $(\"edit_exercise_name\").all();\n\n// 2. Get the 30 Rows coming directly from the Google Sheet node\nconst sheetRows = $input.all();\n\n// 3. Map through the 8 items to find matches\nreturn aiExercises.map(exerciseItem => {\n  const exercise = exerciseItem.json;\n  \n  // Find match in the 30 rows using the 'exercise_name_normalized' column\n  const match = sheetRows.find(row => {\n    const sheetName = row.json?.exercise_name_normalized;\n    const aiName = exercise.exercise_name_normalized;\n\n    return sheetName && aiName && \n           sheetName.toString().toLowerCase().trim() === aiName.toString().toLowerCase().trim();\n  });\n\n  return {\n    json: {\n      // Keep all original workout details (reps, rounds, date)\n      ...exercise,\n      // If found, pull the real ID from your sheet; otherwise, label it\n      exercise_id: match ? match.json.exercise_id : \"PENDING\",\n      //exercise_name_normalized: //match.json.exercise_name_normalized,\n      is_new: !match\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        0
+      ],
+      "id": "a7c4f86b-06fd-4c79-a362-1904972f3462",
+      "name": "code_exercise_match"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "035ca064-963d-444a-ad65-acb429bf3e71",
+              "leftValue": "={{ $json.is_new }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1840,
+        48
+      ],
+      "id": "7d651589-3f86-4163-b6ef-31dfa5f94d67",
+      "name": "filter_new_exercise"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2064,
+        240
+      ],
+      "id": "f60984cd-1318-443f-a1e8-481df0b2c7e3",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "n57q0EDgVOePyZCV",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 14
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2176,
+        240
+      ],
+      "id": "cf497c67-725b-456d-a12e-29b7f6e22462",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "exercise_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "exercise_id",
+              "lookupValue": "PENDING"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3168,
+        176
+      ],
+      "id": "7b67d901-5ced-4a17-a5bb-f015ef2384ae",
+      "name": "get_pending_exercise_id",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Reference the 'get_exercise_list' node from the beginning of the workflow\n// This node contains the clean state before any 'PENDING' rows were added.\nconst catalogItems = $(\"get_exercise_list\").all();\n\n// 2. Extract numeric IDs and find the true Maximum\n// We use Number() and filter(isFinite) to ensure we don't hit NaN errors\nconst existingIds = catalogItems\n  .map(item => Number(item.json.exercise_id))\n  .filter(id => Number.isFinite(id));\n\nconst currentMax = existingIds.length > 0 ? Math.max(...existingIds) : 0;\n\n// 3. Process the new exercises needing IDs (from the 'True' path)\nconst pendingExercises = $input.all();\n\nreturn pendingExercises.map((item, index) => {\n  return {\n    json: {\n      ...item.json,\n      // Increment based on position in the current batch (1-based index)\n      exercise_id: currentMax + (index + 1),\n      is_new: true           // EXPLICITLY RE-ASSERT THIS HERE\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3376,
+        176
+      ],
+      "id": "667d05bb-7871-4886-9dec-f2adf86092a2",
+      "name": "code_exercise_id"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "exercise_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "exercise_id": "={{ $json.exercise_id }}",
+            "row_number": "={{ $json.row_number }}",
+            "exercise_name_normalized": "={{ $json.exercise_name_normalized }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "exercise_id",
+              "displayName": "exercise_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_name",
+              "displayName": "exercise_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_body_part_focus",
+              "displayName": "exercise_body_part_focus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_primary_equipment",
+              "displayName": "exercise_primary_equipment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_movement_pattern",
+              "displayName": "exercise_movement_pattern",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_intensity_type",
+              "displayName": "exercise_intensity_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_description",
+              "displayName": "exercise_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_muscles_worked",
+              "displayName": "exercise_muscles_worked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_key_cues_safety",
+              "displayName": "exercise_key_cues_safety",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_non_machine_alternative",
+              "displayName": "exercise_non_machine_alternative",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_name_normalized",
+              "displayName": "exercise_name_normalized",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3632,
+        176
+      ],
+      "id": "92a3f7a4-debf-42ab-b9f5-e8ed1555e962",
+      "name": "update_exercise_id",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1752911971,
+          "mode": "list",
+          "cachedResultName": "workout_exercise",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=1752911971"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4048,
+        192
+      ],
+      "id": "58fc7510-2be9-484f-93db-682a45b5799c",
+      "name": "get_workout_exercise",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 1. Clean the AI string by removing Markdown backticks and whitespace\nlet rawOutput = $input.item.json.output || \"\";\nlet cleanedOutput = rawOutput.replace(/```json/g, \"\").replace(/```/g, \"\").trim();\n\n// 2. Parse the cleaned string\nlet aiMetadata;\ntry {\n  aiMetadata = JSON.parse(cleanedOutput);\n} catch (e) {\n  // Fallback if the AI output is completely garbled\n  aiMetadata = { exercise_name: \"Error Parsing Name\" };\n}\n\n// 3. Return with the PENDING flag for our batch ID logic\nreturn {\n  ...aiMetadata,\n  exercise_id: \"PENDING\"\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2752,
+        32
+      ],
+      "id": "5f9aaea4-497e-44c1-89ed-4d1bb099c01c",
+      "name": "code_json_output2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are a workout AI agent with two modes: LOG and GENERATE.\n\nYou do not chat. You do not explain. You do not ask questions.\nYou only output valid JSON. Nothing else.\n\n---\n\nSTEP 1 \u2014 DETECT INTENT\n\nRead the user message and determine which intent applies:\n\nLOG intent \u2014 user is describing a workout they did:\n  Trigger phrases: \"today I did\", \"I trained\", \"my workout was\", \"log\", \"I did\"\n\nGENERATE intent \u2014 user wants a workout suggestion:\n  Trigger phrases: \"suggest\", \"generate\", \"give me a workout\", \"what should I do\", \n  \"create a workout\", \"workout idea\", \"remix\", \"plan a workout\"\n\nCONFIRM intent \u2014 user is approving a suggested workout to be saved:\n  Trigger phrases: \"confirm\", \"log it\", \"save this\", \"yes\", \"looks good\", \"do it\"\n\nMODIFY intent \u2014 user wants to change the current suggestion:\n  Trigger phrases: \"replace #N\", \"swap #N\", \"regenerate\", \"new suggestion\", \"add [exercise]\"\n\n---\n\nSTEP 2 \u2014 OUTPUT THE CORRECT JSON\n\nFor LOG intent, output exactly this schema:\n{\n  \"intent\": \"log\",\n  \"workout_date\": \"YYYY-MM-DD\",\n  \"workout_type_name\": \"string\",\n  \"exercises\": [\n    {\n      \"exercise_name\": \"string\",\n      \"rounds\": number,\n      \"repetition_type\": \"reps | seconds| time | amrap\",\n      \"repetition_amount\": number | string\n    }\n  ]\n}\n\nLOG parsing rules:\n1. Identify each distinct exercise.\n2. Normalize exercise names \u2014 canonical, singular, remove equipment prefixes unless essential.\n3. Repetition type: use \"reps\" for counted reps (amount must be a number), \"time\" for time-based (include sec/min), \"amrap\" only if stated.\n4. Rounds must always be filled in.\n5. Do not invent missing values.\n6. Infer workout_type_name from body part targeted if not stated. Pick from: full body, lower body, upper body, core, back, chest.\n7. workout_date is always {{ $today.toFormat('yyyy-MM-dd') }} unless stated otherwise.\n\n---\n\nFor GENERATE intent, output exactly this schema:\n{\n  \"intent\": \"generate\",\n  \"body_part_focus\": \"full body | lower body | upper body | core | back | chest\",\n  \"volume_logic\": \"progressive | same\",\n  \"workout_size\": number\n}\n\nGENERATE rules:\n- body_part_focus: extract from prompt. Default to \"full body\" if not stated.\n- volume_logic: \"progressive\" if user says add reps/increase/progressive. \"same\" if user says same as last/repeat. Default: \"same\".\n- workout_size: extract if user specifies (e.g. \"give me 6 exercises\"). Default: 8.\n\n---\n\nFor CONFIRM intent, output exactly and only this \u2014 nothing else:\n{\n  \"intent\": \"confirm_log\"\n}\n\nDo NOT attempt to reconstruct the exercise list.\nDo NOT include exercises, workout_date or workout_type_name.\nThe workflow will retrieve the full workout from storage.\nTrigger phrases: \"confirm\", \"log it\", \"save this\", \"yes\", \"looks good\", \"do it\"\n\nCONFIRM rules:\n- Read the exercises exactly as they appeared in the last suggestion\n- Do not change any values \u2014 use the exact reps, rounds and rep type from the suggestion\n- workout_date is always {{ $today.toFormat('yyyy-MM-dd') }} unless the user stated otherwise\n- workout_type_name should match the body part focus from the suggestion\n\n---\n\nFor MODIFY intent with action \"replace\":\n- Read the previously suggested workout from your conversation history\n- Find the exercise to remove by name or index\n- Replace it with the new exercise specified\n- Output the COMPLETE updated exercise list in this schema:\n\n{\n  \"intent\": \"modify\",\n  \"action\": \"replace\",\n  \"exercise_name\": \"exercise being removed\",\n  \"new_exercise_name\": \"exercise being added\",\n  \"updated_exercises\": [\n    {\n      \"exercise_name\": \"string\",\n      \"repetition_type\": \"reps | time | amrap\",\n      \"repetition_amount\": number | string,\n      \"rounds\": number\n    }\n  ]\n}\n\nFor MODIFY intent with action \"add\":\n- Read the previously suggested workout from your conversation history  \n- Add the new exercise to the list\n- Output the COMPLETE updated exercise list using the same schema above\n  with action \"add\"\n\nFor MODIFY intent with action \"remove\":\n- Read the previously suggested workout from your conversation history\n- Remove the specified exercise\n- Output the COMPLETE updated exercise list using the same schema above\n  with action \"remove\"\n\nFor MODIFY intent with action \"regenerate\":\n- Output this schema:\n{\n  \"intent\": \"modify\",\n  \"action\": \"regenerate\",\n  \"body_part_focus\": \"full body | lower body | upper body | core | back | chest\",\n  \"volume_logic\": \"progressive | same\",\n  \"workout_size\": 5\n}\n\nIMPORTANT: When handling replace, add or remove actions, you must \nreconstruct the exercise list from your conversation history.\n\nLook back through the conversation for your last GENERATE or MODIFY \nresponse. It will contain a JSON object. Use the exercises from that \nresponse to build updated_exercises.\n\nFor the last generate response, the workout_size field tells you how \nmany exercises were generated. However you do not know the exact \nexercise names since those were selected by the workflow, not by you.\n\nBecause you cannot reliably reconstruct the exercise list, output this \ninstead for replace/add/remove actions:\n\n{\n  \"intent\": \"modify\",\n  \"action\": \"replace | add | remove\",\n  \"exercise_name\": \"exercise being removed (null for add)\",\n  \"new_exercise_name\": \"exercise being added (null for remove)\",\n  \"exercise_index\": number or null\n}\n\n---\n\nCRITICAL RULES (apply to all intents):\n- Output JSON only. No markdown. No comments. No extra text. No explanations.\n- Never wrap in code blocks.\n- After the workflow runs, do NOT summarize. Display the exact text from the final node.\n- Once JSON is output, your job is finished."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -256,
+        0
+      ],
+      "id": "0df68b5f-855d-4ac9-942a-d7bb88780b2f",
+      "name": "ai_agent_prompt_process",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Role: Act as a professional fitness data annotator.\n\nTask: Based on the exercise name '{{ $json.exercise_name_normalized }}', provide the following metadata.\n\nConstraint - Categorical Values: For the following fields, you must select from the provided list. Use a \"/\" for combinations (e.g., \"core/upper body\").\n\nbody part focus: core, full body, lower body, upper body\n\nprimary equipment: machine (cable), bodyweight, kettlebell, dumbbell, plate, box, band, barbell, stability ball, leg press machine, bench\n\nmovement pattern: rotation, push, pull, hinge, squat\n\nintensity type: endurance, strength, power, hypertrophy\n\nConstraint - Content:\n\nDescription: Exactly 1 short sentence.\n\nKey Cues: Focused on safety and form.\n\nNormalized Name: Return the input '{{ $json.exercise_name_normalized }}' exactly as provided.\n\nOutput Format: Return ONLY a valid JSON object. Do not include conversational text.\n\n{\n  \"exercise_name\": \"string (Pretty version, e.g., 'Oh Marches')\",\n  \"exercise_body_part_focus\": \"string\",\n  \"exercise_primary_equipment\": \"string\",\n  \"exercise_movement_pattern\": \"string\",\n  \"exercise_intensity_type\": \"string\",\n  \"exercise_description\": \"string\",\n  \"exercise_muscles_worked\": \"string\",\n  \"exercise_key_cues_safety\": \"string\",\n  \"exercise_non_machine_alternative\": \"string\",\n  \"exercise_name_normalized\": \"string\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2064,
+        32
+      ],
+      "id": "5588bfe0-afd1-4369-9a1b-6b7c1104d446",
+      "name": "ai_agent_exercise_info"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. DECLARE INPUTS\nconst workoutHistory = $(\"get_workout_exercise\").all();\nconst workoutTypes = $(\"get_workout_types\").all();\nconst workoutData = $(\"split_out_exercise\").all();\nconst mergedItems = $(\"merge_new_exerciseid\").all();\n\n// 2. CALCULATE NEXT WORKOUT ID (Max + 1)\nconst existingIds = workoutHistory\n  .map(item => Number(item.json.workout_id))\n  .filter(id => Number.isFinite(id));\nconst nextWorkoutId = (existingIds.length > 0 ? Math.max(...existingIds) : 0) + 1;\n\n// 3. MAP EVERYTHING TOGETHER\nreturn mergedItems.map((item) => {\n  // JOIN: Find original metadata using the validated key 'exercise_name'\n  // We use .trim().toLowerCase() to ensure a 100% match success rate\n  const match = workoutData.find(d => \n    d.json.exercise_name?.toLowerCase().trim() === item.json.exercise_name_normalized?.toLowerCase().trim()\n  );\n  \n  const original = match ? match.json : {};\n\n  // LOOKUP: Resolve workout_type_id from your reference table\n  const typeMatch = workoutTypes.find(t => \n    t.json.workout_type_name?.toLowerCase().trim() === original.workout_type_name?.toLowerCase().trim()\n  );\n  const actualTypeId = typeMatch ? typeMatch.json.workout_type_id : null;\n\n  return {\n    json: {\n      ...item.json,                  // Keep: exercise_id, row_number, is_new, name_normalized\n      workout_id: nextWorkoutId,     // Add: The incremented session ID\n      workout_date: original.workout_date,\n      workout_type_id: actualTypeId, // Resolved from the reference sheet\n      workout_rounds: original.rounds,\n      workout_repetition_type: original.repetition_type,\n      workout_repetition_amount: original.repetition_amount\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4416,
+        192
+      ],
+      "id": "a58f31a2-cee5-4e36-84dc-a09ce323dc0e",
+      "name": "code_workout_exercise"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2141721645,
+          "mode": "list",
+          "cachedResultName": "workout_type",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=2141721645"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4224,
+        192
+      ],
+      "id": "cb09959a-cc76-4a26-a25a-f5e44cfedc40",
+      "name": "get_workout_types",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "exercise_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "exercise_id": "={{ $json.exercise_id }}",
+            "exercise_name": "={{ $json.exercise_name }}",
+            "exercise_body_part_focus": "={{ $json.exercise_body_part_focus }}",
+            "exercise_primary_equipment": "={{ $json.exercise_primary_equipment }}",
+            "exercise_name_normalized": "={{ $json.exercise_name_normalized }}",
+            "exercise_intensity_type": "={{ $json.exercise_intensity_type }}",
+            "exercise_movement_pattern": "={{ $json.exercise_movement_pattern }}",
+            "exercise_muscles_worked": "={{ $json.exercise_muscles_worked }}",
+            "exercise_description": "={{ $json.exercise_description }}",
+            "exercise_key_cues_safety": "={{ $json.exercise_key_cues_safety }}",
+            "exercise_non_machine_alternative": "={{ $json.exercise_non_machine_alternative }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "exercise_id",
+              "displayName": "exercise_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_name",
+              "displayName": "exercise_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_body_part_focus",
+              "displayName": "exercise_body_part_focus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_primary_equipment",
+              "displayName": "exercise_primary_equipment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_movement_pattern",
+              "displayName": "exercise_movement_pattern",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_intensity_type",
+              "displayName": "exercise_intensity_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_description",
+              "displayName": "exercise_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_muscles_worked",
+              "displayName": "exercise_muscles_worked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_key_cues_safety",
+              "displayName": "exercise_key_cues_safety",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_non_machine_alternative",
+              "displayName": "exercise_non_machine_alternative",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_name_normalized",
+              "displayName": "exercise_name_normalized",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2448,
+        32
+      ],
+      "id": "8bd6e831-7100-4abe-b3ac-65a52d9e9052",
+      "name": "append_new_exercise",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1752911971,
+          "mode": "list",
+          "cachedResultName": "workout_exercise",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=1752911971"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workout_id": "={{ $json.workout_id }}",
+            "workout_type_id": "={{ $json.workout_type_id }}",
+            "workout_date": "={{ $json.workout_date }}",
+            "exercise_id": "={{ $json.exercise_id }}",
+            "workout_repetition_type": "={{ $json.workout_repetition_type }}",
+            "workout_rounds": "={{ $json.workout_rounds }}",
+            "workout_repetition_amount": "={{ $json.workout_repetition_amount }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "workout_id",
+              "displayName": "workout_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workout_date",
+              "displayName": "workout_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workout_type_id",
+              "displayName": "workout_type_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_id",
+              "displayName": "exercise_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workout_rounds",
+              "displayName": "workout_rounds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workout_repetition_type",
+              "displayName": "workout_repetition_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workout_repetition_amount",
+              "displayName": "workout_repetition_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4640,
+        192
+      ],
+      "id": "55fc0341-bbac-4ab9-a9ac-e4a4caa05ddd",
+      "name": "append_workout_exercise",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. GATHER INPUTS\nconst workoutData = $(\"code_workout_exercise\").all();\nconst workoutTypes = $(\"get_workout_types\").all(); // Reference table with names/IDs\n\n// 2. EXTRACT METRICS\nconst totalExercises = workoutData.length;\nconst newExercises = workoutData.filter(item => item.json.is_new === true).length;\n\n// 3. REVERSE LOOKUP: ID -> NAME\nconst firstRow = workoutData[0]?.json;\nconst typeMatch = workoutTypes.find(t => \n  Number(t.json.workout_type_id) === Number(firstRow?.workout_type_id)\n);\nconst typeName = typeMatch ? typeMatch.json.workout_type_name : \"Unknown Type\";\nconst workoutDate = firstRow?.workout_date || \"Today\";\n\n// 4. CONSTRUCT THE FINAL LOG\nconst successMessage = `\n\u2705 **Workout Logged Successfully!**\n\n\ud83d\udcc5 **Date:** ${workoutDate}\n\ud83c\udfcb\ufe0f **Workout Type:** ${typeName} \n\ud83d\udcca **Total Exercises:** ${totalExercises}\n\u2728 **New Catalog Entries:** ${newExercises}\n\nAll records have been updated in your Google Sheet.\n`.trim();\n\nreturn [{\n  json: {\n    output: successMessage\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5632,
+        192
+      ],
+      "id": "fb74b5eb-37e7-4720-a16f-de651b65112d",
+      "name": "code_generate_success_message"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.suggestion_text ?? $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        5808,
+        192
+      ],
+      "id": "60b42994-26aa-4467-a25f-822a62987208",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "exercise_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "exercise_frequency": "={{ $json.new_frequency }}",
+            "exercise_id": "={{ $json.exercise_id }}"
+          },
+          "matchingColumns": [
+            "exercise_id"
+          ],
+          "schema": [
+            {
+              "id": "exercise_id",
+              "displayName": "exercise_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "exercise_name",
+              "displayName": "exercise_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_body_part_focus",
+              "displayName": "exercise_body_part_focus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_primary_equipment",
+              "displayName": "exercise_primary_equipment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_movement_pattern",
+              "displayName": "exercise_movement_pattern",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_intensity_type",
+              "displayName": "exercise_intensity_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_description",
+              "displayName": "exercise_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_muscles_worked",
+              "displayName": "exercise_muscles_worked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_key_cues_safety",
+              "displayName": "exercise_key_cues_safety",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_non_machine_alternative",
+              "displayName": "exercise_non_machine_alternative",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_name_normalized",
+              "displayName": "exercise_name_normalized",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_frequency",
+              "displayName": "exercise_frequency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        5424,
+        192
+      ],
+      "id": "9410dc4d-73cc-418d-a246-276c2037dfc4",
+      "name": "update_exercise_frequency",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This ensures we handle every exercise in the incoming list\nreturn items.map(item => {\n  // We extract the current frequency and ID from the incoming stream\n  // We use Number() to prevent string concatenation (e.g., \"1\" + 1 = \"11\")\n  const currentFrequency = Number(item.json.exercise_frequency) || 0;\n  \n  return {\n    json: {\n      exercise_id: item.json.exercise_id,\n      new_frequency: currentFrequency + 1\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5216,
+        192
+      ],
+      "id": "8facf8d0-6223-4f9d-a041-8185a83ed0d6",
+      "name": "code_calculate_new_frequency"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2944,
+        176
+      ],
+      "id": "196c33b3-0251-4757-a4fd-2906f166feb9",
+      "name": "merge_prompted_exercises"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3808,
+        192
+      ],
+      "id": "aa40c5e9-d567-4911-8cd9-dc6a518976e3",
+      "name": "merge_new_exerciseid"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "exercise_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        5056,
+        208
+      ],
+      "id": "4456d8b6-df4b-4722-81b2-c403ccf7078a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "exercise_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4784,
+        192
+      ],
+      "id": "bb681e00-e643-4dda-836d-5efd5b9f6548",
+      "name": "get_exercise_list2",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9c6d1a10-0f7e-44fc-88d3-d842b420d891",
+              "leftValue": "={{ JSON.parse($json.output).intent }}",
+              "rightValue": "generate",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "fe4e7e60-954a-4caa-9abe-c078e67f4f6a",
+              "leftValue": "={{ JSON.parse($json.output).intent }}",
+              "rightValue": "modify",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        48,
+        0
+      ],
+      "id": "6ae4d6e8-4442-4e3b-8377-a5f574534fcc",
+      "name": "route_by_intent"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "exercise_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        -288
+      ],
+      "id": "0b008d80-c413-47de-86ac-c3cd4561ccf7",
+      "name": "get_exercise_catalog",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1752911971,
+          "mode": "list",
+          "cachedResultName": "workout_exercise",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=1752911971"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        704,
+        -288
+      ],
+      "id": "06898200-e723-4b92-a732-470d1d6b3337",
+      "name": "get_recent_workouts",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// \u2500\u2500 PARSE AGENT INTENT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst agentRaw = $('ai_agent_prompt_process').first().json.output;\nconst agentOutput = JSON.parse(agentRaw);\n\nconst focusRaw = (agentOutput.body_part_focus || 'full body').toLowerCase().trim();\nconst volumeMode = (agentOutput.volume_logic || 'same').toLowerCase();\nconst isProgressive = volumeMode === 'progressive';\nconst workoutSize = parseInt(agentOutput.workout_size) || 5;\n\n// \u2500\u2500 CATALOG & HISTORY \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst catalog = $('get_exercise_catalog').all();\nconst history = $('get_recent_workouts').all();\n\n// \u2500\u2500 FILTER by body part \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nlet pool = catalog.filter(function(ex) {\n  const bp = (ex.json.exercise_body_part_focus || '').toLowerCase();\n  if (focusRaw === 'full body') return true;\n  return bp.includes(focusRaw) || focusRaw.includes(bp);\n});\n\nif (pool.length === 0) pool = catalog;\n\n// \u2500\u2500 SORT by frequency ascending (least used first) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\npool.sort(function(a, b) {\n  const fa = Number(a.json.exercise_frequency) || 0;\n  const fb = Number(b.json.exercise_frequency) || 0;\n  return fa - fb;\n});\n\n// \u2500\u2500 80/20 SPLIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst lowCount = Math.max(1, Math.round(workoutSize * 0.2));\nconst highCount = workoutSize - lowCount;\n\nconst lowFreqSize = Math.ceil(pool.length * 0.3);\nconst highFreqSize = Math.ceil(pool.length * 0.7);\nconst lowFreqPool = pool.slice(0, lowFreqSize);\nconst highFreqPool = pool.slice(pool.length - highFreqSize);\n\nfunction pickRandom(arr, n) {\n  const shuffled = arr.slice().sort(function() { return Math.random() - 0.5; });\n  return shuffled.slice(0, Math.min(n, shuffled.length));\n}\n\nconst selected = pickRandom(highFreqPool, highCount).concat(pickRandom(lowFreqPool, lowCount));\n\n// \u2500\u2500 MOVEMENT PATTERN ROTATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst patternOrder = ['squat', 'hinge', 'push', 'pull', 'rotation', 'carry'];\nselected.sort(function(a, b) {\n  const pa = patternOrder.indexOf((a.json.exercise_movement_pattern || '').toLowerCase());\n  const pb = patternOrder.indexOf((b.json.exercise_movement_pattern || '').toLowerCase());\n  return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb);\n});\n\n// \u2500\u2500 LOOK UP LAST USED REPS/ROUNDS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nfunction getLastEntry(exerciseName) {\n  const matches = history.filter(function(h) {\n    return (h.json.workout_exercise_name || '').toLowerCase().trim() ===\n           (exerciseName || '').toLowerCase().trim();\n  });\n  matches.sort(function(a, b) {\n    return (b.json.workout_date || '').localeCompare(a.json.workout_date || '');\n  });\n  return matches.length > 0 ? matches[0].json : null;\n}\n\n// \u2500\u2500 BUILD OUTPUT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst result = selected.map(function(ex) {\n  const last = getLastEntry(ex.json.exercise_name);\n  let baseReps = last ? (last.workout_repetition_amount || 10) : 10;\n  let baseRounds = last ? Number(last.workout_rounds) || 3 : 3;\n  let repType = last ? (last.workout_repetition_type || 'reps') : 'reps';\n\n  if (isProgressive) {\n    if (repType === 'time') {\n      // Parse the time string e.g. \"30 sec\", \"1 min\", \"90sec\"\n      const timeStr = String(baseReps).toLowerCase().trim();\n      const timeNum = parseFloat(timeStr);\n      const isMin = timeStr.includes('min');\n      const isSec = timeStr.includes('sec');\n      if (!isNaN(timeNum)) {\n        const increased = Math.ceil(timeNum * 1.1);\n        if (isMin) {\n          baseReps = increased + ' min';\n        } else if (isSec) {\n          baseReps = increased + ' sec';\n        } else {\n          baseReps = increased + ' sec'; // fallback assume seconds\n        }\n      }\n    } else {\n      // Numeric reps \u2014 apply +10%\n      baseReps = Math.ceil(Number(baseReps) * 1.1);\n    }\n  }\n\n  return {\n    exercise_name: ex.json.exercise_name,\n    body_part: ex.json.exercise_body_part_focus,\n    movement_pattern: ex.json.exercise_movement_pattern,\n    equipment: ex.json.exercise_primary_equipment,\n    repetition_type: repType,\n    repetition_amount: baseReps,\n    rounds: baseRounds,\n    is_new_exercise: (Number(ex.json.exercise_frequency) || 0) === 0\n  };\n});\n\nreturn [{ json: {\n  body_part_focus: focusRaw,\n  volume_mode: volumeMode,\n  exercises: result\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        -320
+      ],
+      "id": "ee628e4f-c183-4379-8b58-b03f97691b25",
+      "name": "code_workout_generator"
+    },
+    {
+      "parameters": {
+        "jsCode": "// READ SOURCE DATA - use $input first, fall back to node references\nvar exercises = [];\nvar focus = 'full body';\nvar mode = 'same';\n\nvar inputData = $input.first().json;\n\nif (inputData && inputData.exercises && inputData.exercises.length > 0) {\n  exercises = inputData.exercises;\n  focus = inputData.body_part_focus || 'full body';\n  mode = inputData.volume_mode || 'same';\n} else {\n  try {\n    var genData = $('code_workout_generator').first().json;\n    if (genData && genData.exercises && genData.exercises.length > 0) {\n      exercises = genData.exercises;\n      focus = genData.body_part_focus || 'full body';\n      mode = genData.volume_mode || 'same';\n    }\n  } catch(e) {}\n\n  if (exercises.length === 0) {\n    try {\n      var modData = $('code_handle_modify').first().json;\n      if (modData && modData.exercises && modData.exercises.length > 0) {\n        exercises = modData.exercises;\n        focus = modData.body_part_focus || 'full body';\n        mode = modData.volume_mode || 'same';\n      }\n    } catch(e) {}\n  }\n}\n\n// \u2500\u2500 HEADER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst patterns = [];\nconst equipment = [];\nfor (let i = 0; i < exercises.length; i++) {\n  const e = exercises[i];\n  if (e.movement_pattern && patterns.indexOf(e.movement_pattern) === -1) {\n    patterns.push(e.movement_pattern);\n  }\n  if (e.equipment && equipment.indexOf(e.equipment) === -1) {\n    equipment.push(e.equipment);\n  }\n}\n\nconst focusLabel = focus.charAt(0).toUpperCase() + focus.slice(1);\nconst volumeLabel = mode === 'progressive' ? '+10% progressive' : 'Same as last';\n\nconst header = '**Workout Focus:** ' + focusLabel +\n  ' | **Patterns:** ' + patterns.join(', ') +\n  ' | **Volume:** ' + volumeLabel + '\\n' +\n  '**Equipment needed:** ' + equipment.join(', ') + '\\n\\n';\n\n// \u2500\u2500 TABLE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst tableHeader = '| # | Exercise | Rep Type | Amount | Rounds |';\nconst tableDivider = '|---|----------|----------|--------|--------|';\n\nconst tableRows = [];\nfor (let i = 0; i < exercises.length; i++) {\n  const ex = exercises[i];\n  const newTag = ex.is_new_exercise ? ' \ud83c\udd95' : '';\n  tableRows.push('| ' + (i + 1) + ' | ' + ex.exercise_name + newTag +\n    ' | ' + ex.repetition_type +\n    ' | ' + ex.repetition_amount +\n    ' | ' + ex.rounds + ' |');\n}\n\nconst table = [tableHeader, tableDivider].concat(tableRows).join('\\n');\n\n// \u2500\u2500 FOOTER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst footer = '\\n\\n---\\nReply with:\\n' +\n  '\u2022 **Confirm** \u2014 save this workout\\n' +\n  '\u2022 **Replace [exercise name] with [new exercise]** \u2014 swap an exercise\\n' +\n  '\u2022 **Add [exercise name]** \u2014 add a specific exercise\\n' +\n  '\u2022 **Remove #N or [exercise name]** \u2014 remove an exercise\\n' +\n  '\u2022 **Regenerate** \u2014 create a completely new suggestion';\n\nconst fullMessage = header + table + footer;\n\nreturn [{ json: {\n  suggestion_text: fullMessage,\n  exercises_json: JSON.stringify(exercises),\n  body_part_focus: focus,\n  volume_mode: mode\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -384
+      ],
+      "id": "6fa3cbc4-db59-4650-88e2-a841fb75bb8c",
+      "name": "code_format_suggestion"
+    },
+    {
+      "parameters": {
+        "jsCode": "var inputData = $input.first().json;\n\nif (inputData.exercises && Array.isArray(inputData.exercises)) {\n  return inputData.exercises.map(function(exercise) {\n    var row = {};\n    row.exercise_name = exercise.exercise_name;\n    row.rounds = exercise.rounds;\n    row.repetition_type = exercise.repetition_type;\n    row.repetition_amount = exercise.repetition_amount;\n    row.workout_date = inputData.workout_date;\n    row.workout_type_name = inputData.workout_type_name;\n    return { json: row };\n  });\n}\n\nvar raw = inputData.output;\nvar parsed = JSON.parse(raw);\n\nreturn parsed.exercises.map(function(exercise) {\n  var row = {};\n  row.exercise_name = exercise.exercise_name;\n  row.rounds = exercise.rounds;\n  row.repetition_type = exercise.repetition_type;\n  row.repetition_amount = exercise.repetition_amount;\n  row.workout_date = parsed.workout_date;\n  row.workout_type_name = parsed.workout_type_name;\n  return { json: row };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        16
+      ],
+      "id": "ff546ea9-103c-419e-8579-2b332e17d3a3",
+      "name": "code_json_output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e3d5fb86-f692-42cd-8885-db9908f7ed3c",
+              "leftValue": "={{ JSON.parse($('ai_agent_prompt_process').first().json.output).intent }}",
+              "rightValue": "generate",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        288,
+        -128
+      ],
+      "id": "e44945e8-d45d-4d2f-86d0-889b64cc3bea",
+      "name": "if_generate_or_modify",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "var agentRaw = $('ai_agent_prompt_process').first().json.output;\nvar agentOutput = JSON.parse(agentRaw);\nvar action = agentOutput.action;\nvar catalog = $('get_exercise_catalog_modify').all();\nvar history = $('get_recent_workouts_modify').all();\nvar currentExercises = [];\ntry {\n  var stagedRaw = $('get_staged_workout').first().json.exercises_json;\n  if (stagedRaw && stagedRaw !== 'undefined') {\n    currentExercises = JSON.parse(stagedRaw);\n  }\n} catch(e) {\n  currentExercises = [];\n}\n\nfunction findInCatalog(name) {\n  var nameLower = name.toLowerCase().trim();\n  // Also try with 's' added or removed for plural/singular matching\n  var namePlural = nameLower.endsWith('s') ? nameLower : nameLower + 's';\n  var nameSingular = nameLower.endsWith('s') ? nameLower.slice(0, -1) : nameLower;\n\n  for (var i = 0; i < catalog.length; i++) {\n    var cat = catalog[i].json;\n    var catName = (cat.exercise_name || '').toLowerCase().trim();\n    var catNorm = (cat.exercise_name_normalized || '').toLowerCase().trim();\n\n    if (catName === nameLower || catNorm === nameLower ||\n        catName === namePlural || catName === nameSingular ||\n        catNorm === namePlural || catNorm === nameSingular) {\n      return cat;\n    }\n  }\n  return null;\n}\n\nfunction findInHistory(name) {\n  var nameLower = name.toLowerCase().trim();\n  var namePlural = nameLower.endsWith('s') ? nameLower : nameLower + 's';\n  var nameSingular = nameLower.endsWith('s') ? nameLower.slice(0, -1) : nameLower;\n  var best = null;\n  for (var i = 0; i < history.length; i++) {\n    var h = history[i].json;\n    var hName = (h.workout_exercise_name || '').toLowerCase().trim();\n    if (hName === nameLower || hName === namePlural || hName === nameSingular) {\n      if (!best || (h.workout_date || '') > (best.workout_date || '')) {\n        best = h;\n      }\n    }\n  }\n  return best;\n}\n\nfunction buildExercise(catEntry, histEntry) {\n  var repType = 'reps';\n  if (histEntry && histEntry.workout_repetition_type) {\n    repType = histEntry.workout_repetition_type;\n  }\n  var repAmount = 10;\n  if (histEntry && histEntry.workout_repetition_amount) {\n    repAmount = histEntry.workout_repetition_amount;\n  }\n  var rounds = 3;\n  if (histEntry && histEntry.workout_rounds) {\n    rounds = Number(histEntry.workout_rounds);\n  }\n  var ex = {};\n  ex.exercise_name = catEntry.exercise_name;\n  ex.body_part = catEntry.exercise_body_part_focus;\n  ex.movement_pattern = catEntry.exercise_movement_pattern;\n  ex.equipment = catEntry.exercise_primary_equipment;\n  ex.repetition_type = repType;\n  ex.repetition_amount = repAmount;\n  ex.rounds = rounds;\n  ex.is_new_exercise = (Number(catEntry.exercise_frequency) || 0) === 0;\n  return ex;\n}\n\nfunction makeResult(exercises) {\n  var r = {};\n  r.body_part_focus = 'full body';\n  r.volume_mode = 'same';\n  r.exercises = exercises;\n  return r;\n}\n\nif (action === 'regenerate') {\n  var newFocus = agentOutput.body_part_focus || 'full body';\n  var newVolume = agentOutput.volume_logic || 'same';\n  var newSize = parseInt(agentOutput.workout_size) || 5;\n  var regenData = {};\n  regenData.intent = 'generate';\n  regenData.body_part_focus = newFocus;\n  regenData.volume_logic = newVolume;\n  regenData.workout_size = newSize;\n  regenData.output = JSON.stringify(regenData);\n  return [{ json: regenData }];\n}\n\nif (action === 'replace') {\n  var exName = (agentOutput.exercise_name || '').toLowerCase().trim();\n  var newExName = (agentOutput.new_exercise_name || '').toLowerCase().trim();\n  var exIndex = agentOutput.exercise_index;\n\n  var targetIdx = -1;\n  if (exIndex !== null && exIndex !== undefined) {\n    targetIdx = exIndex - 1;\n  } else {\n    for (var i = 0; i < currentExercises.length; i++) {\n      if ((currentExercises[i].exercise_name || '').toLowerCase().trim() === exName) {\n        targetIdx = i;\n        break;\n      }\n    }\n  }\n\n  var repCat = findInCatalog(newExName);\n\n  if (targetIdx === -1) {\n    var e1 = makeResult(currentExercises);\n    e1.error_message = 'Exercise not found: ' + exName;\n    return [{ json: e1 }];\n  }\n\n  if (!repCat) {\n    var e2 = makeResult(currentExercises);\n    e2.error_message = 'Replacement not found: ' + newExName;\n    return [{ json: e2 }];\n  }\n\n  var repHist = findInHistory(newExName);\n  var newExObj = buildExercise(repCat, repHist);\n\n  var replacedList = [];\n  for (var j = 0; j < currentExercises.length; j++) {\n    if (j === targetIdx) {\n      replacedList.push(newExObj);\n    } else {\n      replacedList.push(currentExercises[j]);\n    }\n  }\n  return [{ json: makeResult(replacedList) }];\n}\n\nif (action === 'add') {\n  var addExName = (agentOutput.new_exercise_name || '').toLowerCase().trim();\n  var addCat = findInCatalog(addExName);\n\n  if (!addCat) {\n    var addErr = makeResult(currentExercises);\n    addErr.needs_new_exercise = true;\n    addErr.new_exercise_name = agentOutput.new_exercise_name;\n    return [{ json: addErr }];\n  }\n\n  var addHist = findInHistory(addExName);\n  var addExObj = buildExercise(addCat, addHist);\n  var addedList = currentExercises.slice();\n  addedList.push(addExObj);\n  return [{ json: makeResult(addedList) }];\n}\n\nif (action === 'remove') {\n  var remName = (agentOutput.exercise_name || '').toLowerCase().trim();\n  var remIndex = agentOutput.exercise_index;\n  var remTarget = -1;\n\n  if (remIndex !== null && remIndex !== undefined) {\n    remTarget = remIndex - 1;\n  } else {\n    for (var k = 0; k < currentExercises.length; k++) {\n      if ((currentExercises[k].exercise_name || '').toLowerCase().trim() === remName) {\n        remTarget = k;\n        break;\n      }\n    }\n  }\n\n  var removedList = [];\n  for (var l = 0; l < currentExercises.length; l++) {\n    if (l !== remTarget) {\n      removedList.push(currentExercises[l]);\n    }\n  }\n  return [{ json: makeResult(removedList) }];\n}\n\nvar fallback = makeResult(currentExercises);\nfallback.error_message = 'Unknown action: ' + action;\nreturn [{ json: fallback }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        -144
+      ],
+      "id": "ebb6ba28-a513-435e-8464-6eb39eb935d2",
+      "name": "code_handle_modify"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "exercise_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        512,
+        -144
+      ],
+      "id": "4b284b2b-5e3d-46f8-b22f-5ce2105fd8af",
+      "name": "get_exercise_catalog_modify",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1752911971,
+          "mode": "list",
+          "cachedResultName": "workout_exercise",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=1752911971"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        -144
+      ],
+      "id": "525e8aab-ecac-4afd-817b-49c228cfd460",
+      "name": "get_recent_workouts_modify",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2138216163,
+          "mode": "list",
+          "cachedResultName": "staged_workout",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=2138216163"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $('When chat message received').first().json.sessionId }}",
+            "exercises_json": "={{ $json.exercises_json }}"
+          },
+          "matchingColumns": [
+            "session_id"
+          ],
+          "schema": [
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "exercises_json",
+              "displayName": "exercises_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1648,
+        -320
+      ],
+      "id": "1040ca0f-c60a-45e0-b98f-1f83287606b4",
+      "name": "save_staged_workout",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2138216163,
+          "mode": "list",
+          "cachedResultName": "staged_workout",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=2138216163"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "session_id",
+              "lookupValue": "={{ $('When chat message received').first().json.sessionId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        928,
+        -144
+      ],
+      "id": "777409fa-5dfd-4962-b54d-e779d6ee4893",
+      "name": "get_staged_workout",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "92b14da2-45ef-437d-82b9-4d936c71bdab",
+              "leftValue": "={{ JSON.parse($json.output).intent }}",
+              "rightValue": "log",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        256,
+        16
+      ],
+      "id": "32225847-a2b5-49be-b14c-a9feac52f301",
+      "name": "if_log_or_confirm"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2138216163,
+          "mode": "list",
+          "cachedResultName": "staged_workout",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=2138216163"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "session_id",
+              "lookupValue": "={{ $('When chat message received').first().json.sessionId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        240
+      ],
+      "id": "62353f56-4af7-4191-8965-80a8c4aae6f8",
+      "name": "get_staged_workout_confirm",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "var stagedRaw = $('get_staged_workout_confirm').first().json.exercises_json;\nvar exercises = [];\n\ntry {\n  if (stagedRaw) {\n    var jsonStart = stagedRaw.indexOf('[');\n    if (jsonStart >= 0) {\n      stagedRaw = stagedRaw.substring(jsonStart);\n    }\n    exercises = JSON.parse(stagedRaw);\n  }\n} catch(e) {\n  exercises = [];\n}\n\nvar today = new Date().toISOString().split('T')[0];\n\nvar result = {};\nresult.intent = 'log';\nresult.workout_date = today;\nresult.workout_type_name = 'full body';\nresult.exercises = exercises.map(function(ex) {\n  var mapped = {};\n  mapped.exercise_name = ex.exercise_name;\n  mapped.rounds = ex.rounds;\n  mapped.repetition_type = ex.repetition_type;\n  mapped.repetition_amount = ex.repetition_amount;\n  mapped.workout_type_name = 'full body';\n  mapped.workout_date = today;\n  return mapped;\n});\n\nreturn [{ json: result }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        240
+      ],
+      "id": "a4359a9d-54a8-4641-9ef8-829ec70e40fb",
+      "name": "code_confirm_to_log"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ai_agent_prompt_process",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "ai_agent_prompt_process",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "ai_agent_prompt_process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "edit_exercise_name": {
+      "main": [
+        [
+          {
+            "node": "get_exercise_list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_exercise_list": {
+      "main": [
+        [
+          {
+            "node": "code_exercise_match",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "split_out_exercise": {
+      "main": [
+        [
+          {
+            "node": "edit_exercise_name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_exercise_match": {
+      "main": [
+        [
+          {
+            "node": "filter_new_exercise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "filter_new_exercise": {
+      "main": [
+        [
+          {
+            "node": "ai_agent_exercise_info",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "merge_prompted_exercises",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "merge_new_exerciseid",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ai_agent_exercise_info",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "ai_agent_exercise_info",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_pending_exercise_id": {
+      "main": [
+        [
+          {
+            "node": "code_exercise_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_exercise_id": {
+      "main": [
+        [
+          {
+            "node": "update_exercise_id",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "merge_new_exerciseid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_exercise_id": {
+      "main": [
+        []
+      ]
+    },
+    "get_workout_exercise": {
+      "main": [
+        [
+          {
+            "node": "get_workout_types",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_json_output2": {
+      "main": [
+        [
+          {
+            "node": "append_new_exercise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ai_agent_prompt_process": {
+      "main": [
+        [
+          {
+            "node": "route_by_intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ai_agent_exercise_info": {
+      "main": [
+        [
+          {
+            "node": "code_json_output2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_workout_types": {
+      "main": [
+        [
+          {
+            "node": "code_workout_exercise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_workout_exercise": {
+      "main": [
+        [
+          {
+            "node": "append_workout_exercise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "append_new_exercise": {
+      "main": [
+        [
+          {
+            "node": "merge_prompted_exercises",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "append_workout_exercise": {
+      "main": [
+        [
+          {
+            "node": "get_exercise_list2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "code_generate_success_message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_exercise_frequency": {
+      "main": [
+        [
+          {
+            "node": "code_generate_success_message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_calculate_new_frequency": {
+      "main": [
+        [
+          {
+            "node": "update_exercise_frequency",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge_prompted_exercises": {
+      "main": [
+        [
+          {
+            "node": "get_pending_exercise_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge_new_exerciseid": {
+      "main": [
+        [
+          {
+            "node": "get_workout_exercise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "code_calculate_new_frequency",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_exercise_list2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "route_by_intent": {
+      "main": [
+        [
+          {
+            "node": "if_generate_or_modify",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "if_log_or_confirm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_exercise_catalog": {
+      "main": [
+        [
+          {
+            "node": "get_recent_workouts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_recent_workouts": {
+      "main": [
+        [
+          {
+            "node": "code_workout_generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_workout_generator": {
+      "main": [
+        [
+          {
+            "node": "code_format_suggestion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_format_suggestion": {
+      "main": [
+        [
+          {
+            "node": "save_staged_workout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_json_output": {
+      "main": [
+        [
+          {
+            "node": "split_out_exercise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if_generate_or_modify": {
+      "main": [
+        [
+          {
+            "node": "get_exercise_catalog",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "get_exercise_catalog_modify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_handle_modify": {
+      "main": [
+        [
+          {
+            "node": "code_format_suggestion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_exercise_catalog_modify": {
+      "main": [
+        [
+          {
+            "node": "get_recent_workouts_modify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_recent_workouts_modify": {
+      "main": [
+        [
+          {
+            "node": "get_staged_workout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_staged_workout": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_staged_workout": {
+      "main": [
+        [
+          {
+            "node": "code_handle_modify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if_log_or_confirm": {
+      "main": [
+        [
+          {
+            "node": "code_json_output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "get_staged_workout_confirm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_staged_workout_confirm": {
+      "main": [
+        [
+          {
+            "node": "code_confirm_to_log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_confirm_to_log": {
+      "main": [
+        [
+          {
+            "node": "code_json_output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "22f6ddd7-5100-4433-aa77-f70d0545b0af",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "48993650a99eead3ee6bba9fa40731f296d1731d08b417e885f61d796ee98abd"
+  },
+  "id": "Oa1ChZ_LywPYBAS2NbPOr",
+  "tags": []
+}

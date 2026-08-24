@@ -1,0 +1,129 @@
+{
+  "name": "workout_tracker_get_staged_workout_api",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "get-staged-workout",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "31174e6f-4a93-4888-9f6f-4f1bbe1fcf4f",
+      "name": "Webhook",
+      "webhookId": "REDACTED-REGENERATED-ON-IMPORT"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2138216163,
+          "mode": "list",
+          "cachedResultName": "staged_workout",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=2138216163"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "session_id",
+              "lookupValue": "={{ $json.query.session_id }}"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e517bf83-0388-4787-811f-e81690dbe272",
+      "name": "get_staged_by_session",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        416,
+        0
+      ],
+      "id": "7496d38a-5b3d-4700-b7c9-ab4edbccc8b0",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "get_staged_by_session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_staged_by_session": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "800bc49f-1346-49ef-af3e-f5c71e7a49ba",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "48993650a99eead3ee6bba9fa40731f296d1731d08b417e885f61d796ee98abd"
+  },
+  "id": "N5e4Dj2EbSNi78-XAuRc7",
+  "tags": []
+}
