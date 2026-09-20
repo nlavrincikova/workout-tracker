@@ -1,5 +1,5 @@
 {
-  "name": "fitness_exercise_catalog",
+  "name": "workout_tracker",
   "nodes": [
     {
       "parameters": {
@@ -15,44 +15,6 @@
       "id": "fc6093bc-e6ee-4c85-90e4-adbfc2e34732",
       "name": "When chat message received",
       "webhookId": "REDACTED-REGENERATED-ON-IMPORT"
-    },
-    {
-      "parameters": {
-        "model": {
-          "__rl": true,
-          "mode": "list",
-          "value": "gpt-4.1-mini"
-        },
-        "builtInTools": {},
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1.3,
-      "position": [
-        -256,
-        160
-      ],
-      "id": "d654a658-ca6a-4e4c-be63-673b4359c15f",
-      "name": "OpenAI Chat Model",
-      "credentials": {
-        "openAiApi": {
-          "id": "n57q0EDgVOePyZCV",
-          "name": "OpenAi account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "contextWindowLength": 14
-      },
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.3,
-      "position": [
-        -160,
-        176
-      ],
-      "id": "dd4c890a-c866-4def-9499-9e515f852265",
-      "name": "Simple Memory"
     },
     {
       "parameters": {
@@ -171,31 +133,6 @@
       ],
       "id": "7d651589-3f86-4163-b6ef-31dfa5f94d67",
       "name": "filter_new_exercise"
-    },
-    {
-      "parameters": {
-        "model": {
-          "__rl": true,
-          "mode": "list",
-          "value": "gpt-4.1-mini"
-        },
-        "builtInTools": {},
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1.3,
-      "position": [
-        2064,
-        240
-      ],
-      "id": "f60984cd-1318-443f-a1e8-481df0b2c7e3",
-      "name": "OpenAI Chat Model1",
-      "credentials": {
-        "openAiApi": {
-          "id": "n57q0EDgVOePyZCV",
-          "name": "OpenAi account"
-        }
-      }
     },
     {
       "parameters": {
@@ -422,8 +359,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3632,
-        176
+        3808,
+        32
       ],
       "id": "92a3f7a4-debf-42ab-b9f5-e8ed1555e962",
       "name": "update_exercise_id",
@@ -481,22 +418,6 @@
       ],
       "id": "5f9aaea4-497e-44c1-89ed-4d1bb099c01c",
       "name": "code_json_output2"
-    },
-    {
-      "parameters": {
-        "options": {
-          "systemMessage": "=You are a workout AI agent with two modes: LOG and GENERATE.\n\nYou do not chat. You do not explain. You do not ask questions.\nYou only output valid JSON. Nothing else.\n\n---\n\nSTEP 1 \u2014 DETECT INTENT\n\nRead the user message and determine which intent applies:\n\nLOG intent \u2014 user is describing a workout they did:\n  Trigger phrases: \"today I did\", \"I trained\", \"my workout was\", \"log\", \"I did\"\n\nGENERATE intent \u2014 user wants a workout suggestion:\n  Trigger phrases: \"suggest\", \"generate\", \"give me a workout\", \"what should I do\", \n  \"create a workout\", \"workout idea\", \"remix\", \"plan a workout\"\n\nCONFIRM intent \u2014 user is approving a suggested workout to be saved:\n  Trigger phrases: \"confirm\", \"log it\", \"save this\", \"yes\", \"looks good\", \"do it\"\n\nMODIFY intent \u2014 user wants to change the current suggestion:\n  Trigger phrases: \"replace #N\", \"swap #N\", \"regenerate\", \"new suggestion\", \"add [exercise]\"\n\n---\n\nSTEP 2 \u2014 OUTPUT THE CORRECT JSON\n\nFor LOG intent, output exactly this schema:\n{\n  \"intent\": \"log\",\n  \"workout_date\": \"YYYY-MM-DD\",\n  \"workout_type_name\": \"string\",\n  \"exercises\": [\n    {\n      \"exercise_name\": \"string\",\n      \"rounds\": number,\n      \"repetition_type\": \"reps | seconds| time | amrap\",\n      \"repetition_amount\": number | string\n    }\n  ]\n}\n\nLOG parsing rules:\n1. Identify each distinct exercise.\n2. Normalize exercise names \u2014 canonical, singular, remove equipment prefixes unless essential.\n3. Repetition type: use \"reps\" for counted reps (amount must be a number), \"time\" for time-based (include sec/min), \"amrap\" only if stated.\n4. Rounds must always be filled in.\n5. Do not invent missing values.\n6. Infer workout_type_name from body part targeted if not stated. Pick from: full body, lower body, upper body, core, back, chest.\n7. workout_date is always {{ $today.toFormat('yyyy-MM-dd') }} unless stated otherwise.\n\n---\n\nFor GENERATE intent, output exactly this schema:\n{\n  \"intent\": \"generate\",\n  \"body_part_focus\": \"full body | lower body | upper body | core | back | chest\",\n  \"volume_logic\": \"progressive | same\",\n  \"workout_size\": number\n}\n\nGENERATE rules:\n- body_part_focus: extract from prompt. Default to \"full body\" if not stated.\n- volume_logic: \"progressive\" if user says add reps/increase/progressive. \"same\" if user says same as last/repeat. Default: \"same\".\n- workout_size: extract if user specifies (e.g. \"give me 6 exercises\"). Default: 8.\n\n---\n\nFor CONFIRM intent, output exactly and only this \u2014 nothing else:\n{\n  \"intent\": \"confirm_log\"\n}\n\nDo NOT attempt to reconstruct the exercise list.\nDo NOT include exercises, workout_date or workout_type_name.\nThe workflow will retrieve the full workout from storage.\nTrigger phrases: \"confirm\", \"log it\", \"save this\", \"yes\", \"looks good\", \"do it\"\n\nCONFIRM rules:\n- Read the exercises exactly as they appeared in the last suggestion\n- Do not change any values \u2014 use the exact reps, rounds and rep type from the suggestion\n- workout_date is always {{ $today.toFormat('yyyy-MM-dd') }} unless the user stated otherwise\n- workout_type_name should match the body part focus from the suggestion\n\n---\n\nFor MODIFY intent with action \"replace\":\n- Read the previously suggested workout from your conversation history\n- Find the exercise to remove by name or index\n- Replace it with the new exercise specified\n- Output the COMPLETE updated exercise list in this schema:\n\n{\n  \"intent\": \"modify\",\n  \"action\": \"replace\",\n  \"exercise_name\": \"exercise being removed\",\n  \"new_exercise_name\": \"exercise being added\",\n  \"updated_exercises\": [\n    {\n      \"exercise_name\": \"string\",\n      \"repetition_type\": \"reps | time | amrap\",\n      \"repetition_amount\": number | string,\n      \"rounds\": number\n    }\n  ]\n}\n\nFor MODIFY intent with action \"add\":\n- Read the previously suggested workout from your conversation history  \n- Add the new exercise to the list\n- Output the COMPLETE updated exercise list using the same schema above\n  with action \"add\"\n\nFor MODIFY intent with action \"remove\":\n- Read the previously suggested workout from your conversation history\n- Remove the specified exercise\n- Output the COMPLETE updated exercise list using the same schema above\n  with action \"remove\"\n\nFor MODIFY intent with action \"regenerate\":\n- Output this schema:\n{\n  \"intent\": \"modify\",\n  \"action\": \"regenerate\",\n  \"body_part_focus\": \"full body | lower body | upper body | core | back | chest\",\n  \"volume_logic\": \"progressive | same\",\n  \"workout_size\": 5\n}\n\nIMPORTANT: When handling replace, add or remove actions, you must \nreconstruct the exercise list from your conversation history.\n\nLook back through the conversation for your last GENERATE or MODIFY \nresponse. It will contain a JSON object. Use the exercises from that \nresponse to build updated_exercises.\n\nFor the last generate response, the workout_size field tells you how \nmany exercises were generated. However you do not know the exact \nexercise names since those were selected by the workflow, not by you.\n\nBecause you cannot reliably reconstruct the exercise list, output this \ninstead for replace/add/remove actions:\n\n{\n  \"intent\": \"modify\",\n  \"action\": \"replace | add | remove\",\n  \"exercise_name\": \"exercise being removed (null for add)\",\n  \"new_exercise_name\": \"exercise being added (null for remove)\",\n  \"exercise_index\": number or null\n}\n\n---\n\nCRITICAL RULES (apply to all intents):\n- Output JSON only. No markdown. No comments. No extra text. No explanations.\n- Never wrap in code blocks.\n- After the workflow runs, do NOT summarize. Display the exact text from the final node.\n- Once JSON is output, your job is finished."
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        -256,
-        0
-      ],
-      "id": "0df68b5f-855d-4ac9-942a-d7bb88780b2f",
-      "name": "ai_agent_prompt_process",
-      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -830,13 +751,13 @@
     },
     {
       "parameters": {
-        "jsCode": "// 1. GATHER INPUTS\nconst workoutData = $(\"code_workout_exercise\").all();\nconst workoutTypes = $(\"get_workout_types\").all(); // Reference table with names/IDs\n\n// 2. EXTRACT METRICS\nconst totalExercises = workoutData.length;\nconst newExercises = workoutData.filter(item => item.json.is_new === true).length;\n\n// 3. REVERSE LOOKUP: ID -> NAME\nconst firstRow = workoutData[0]?.json;\nconst typeMatch = workoutTypes.find(t => \n  Number(t.json.workout_type_id) === Number(firstRow?.workout_type_id)\n);\nconst typeName = typeMatch ? typeMatch.json.workout_type_name : \"Unknown Type\";\nconst workoutDate = firstRow?.workout_date || \"Today\";\n\n// 4. CONSTRUCT THE FINAL LOG\nconst successMessage = `\n\u2705 **Workout Logged Successfully!**\n\n\ud83d\udcc5 **Date:** ${workoutDate}\n\ud83c\udfcb\ufe0f **Workout Type:** ${typeName} \n\ud83d\udcca **Total Exercises:** ${totalExercises}\n\u2728 **New Catalog Entries:** ${newExercises}\n\nAll records have been updated in your Google Sheet.\n`.trim();\n\nreturn [{\n  json: {\n    output: successMessage\n  }\n}];"
+        "jsCode": "// 1. GATHER INPUTS\nconst workoutData = $(\"code_workout_exercise\").all();\nconst workoutTypes = $(\"get_workout_types\").all(); // Reference table with names/IDs\n\n// 2. EXTRACT METRICS\nconst totalExercises = workoutData.length;\nconst newExercises = workoutData.filter(item => item.json.is_new === true).length;\n\n// 3. REVERSE LOOKUP: ID -> NAME\nconst firstRow = workoutData[0]?.json;\nconst typeMatch = workoutTypes.find(t => \n  Number(t.json.workout_type_id) === Number(firstRow?.workout_type_id)\n);\nconst typeName = typeMatch ? typeMatch.json.workout_type_name : \"Unknown Type\";\nconst workoutDate = firstRow?.workout_date || \"Today\";\n\n// 4. CONSTRUCT THE FINAL LOG\nconst successMessage = `\n✅ **Workout Logged Successfully!**\n\n📅 **Date:** ${workoutDate}\n🏋️ **Workout Type:** ${typeName} \n📊 **Total Exercises:** ${totalExercises}\n✨ **New Catalog Entries:** ${newExercises}\n\nAll records have been updated in your Google Sheet.\n`.trim();\n\nreturn [{\n  json: {\n    output: successMessage\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5632,
-        192
+        5712,
+        208
       ],
       "id": "fb74b5eb-37e7-4720-a16f-de651b65112d",
       "name": "code_generate_success_message"
@@ -844,17 +765,18 @@
     {
       "parameters": {
         "respondWith": "text",
-        "responseBody": "={{ $json.suggestion_text ?? $json.output }}",
+        "responseBody": "={{ $json.response_text }}",
         "options": {}
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        5808,
-        192
+        6384,
+        0
       ],
       "id": "60b42994-26aa-4467-a25f-822a62987208",
-      "name": "Respond to Webhook"
+      "name": "Respond to Webhook",
+      "disabled": true
     },
     {
       "parameters": {
@@ -1022,8 +944,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        5424,
-        192
+        5504,
+        208
       ],
       "id": "9410dc4d-73cc-418d-a246-276c2037dfc4",
       "name": "update_exercise_frequency",
@@ -1041,8 +963,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5216,
-        192
+        5296,
+        208
       ],
       "id": "8facf8d0-6223-4f9d-a041-8185a83ed0d6",
       "name": "code_calculate_new_frequency"
@@ -1078,8 +1000,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        5056,
-        208
+        5136,
+        224
       ],
       "id": "4456d8b6-df4b-4722-81b2-c403ccf7078a",
       "name": "Merge"
@@ -1105,8 +1027,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        4784,
-        192
+        4864,
+        208
       ],
       "id": "bb681e00-e643-4dda-836d-5efd5b9f6548",
       "name": "get_exercise_list2",
@@ -1233,7 +1155,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// \u2500\u2500 PARSE AGENT INTENT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst agentRaw = $('ai_agent_prompt_process').first().json.output;\nconst agentOutput = JSON.parse(agentRaw);\n\nconst focusRaw = (agentOutput.body_part_focus || 'full body').toLowerCase().trim();\nconst volumeMode = (agentOutput.volume_logic || 'same').toLowerCase();\nconst isProgressive = volumeMode === 'progressive';\nconst workoutSize = parseInt(agentOutput.workout_size) || 5;\n\n// \u2500\u2500 CATALOG & HISTORY \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst catalog = $('get_exercise_catalog').all();\nconst history = $('get_recent_workouts').all();\n\n// \u2500\u2500 FILTER by body part \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nlet pool = catalog.filter(function(ex) {\n  const bp = (ex.json.exercise_body_part_focus || '').toLowerCase();\n  if (focusRaw === 'full body') return true;\n  return bp.includes(focusRaw) || focusRaw.includes(bp);\n});\n\nif (pool.length === 0) pool = catalog;\n\n// \u2500\u2500 SORT by frequency ascending (least used first) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\npool.sort(function(a, b) {\n  const fa = Number(a.json.exercise_frequency) || 0;\n  const fb = Number(b.json.exercise_frequency) || 0;\n  return fa - fb;\n});\n\n// \u2500\u2500 80/20 SPLIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst lowCount = Math.max(1, Math.round(workoutSize * 0.2));\nconst highCount = workoutSize - lowCount;\n\nconst lowFreqSize = Math.ceil(pool.length * 0.3);\nconst highFreqSize = Math.ceil(pool.length * 0.7);\nconst lowFreqPool = pool.slice(0, lowFreqSize);\nconst highFreqPool = pool.slice(pool.length - highFreqSize);\n\nfunction pickRandom(arr, n) {\n  const shuffled = arr.slice().sort(function() { return Math.random() - 0.5; });\n  return shuffled.slice(0, Math.min(n, shuffled.length));\n}\n\nconst selected = pickRandom(highFreqPool, highCount).concat(pickRandom(lowFreqPool, lowCount));\n\n// \u2500\u2500 MOVEMENT PATTERN ROTATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst patternOrder = ['squat', 'hinge', 'push', 'pull', 'rotation', 'carry'];\nselected.sort(function(a, b) {\n  const pa = patternOrder.indexOf((a.json.exercise_movement_pattern || '').toLowerCase());\n  const pb = patternOrder.indexOf((b.json.exercise_movement_pattern || '').toLowerCase());\n  return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb);\n});\n\n// \u2500\u2500 LOOK UP LAST USED REPS/ROUNDS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nfunction getLastEntry(exerciseName) {\n  const matches = history.filter(function(h) {\n    return (h.json.workout_exercise_name || '').toLowerCase().trim() ===\n           (exerciseName || '').toLowerCase().trim();\n  });\n  matches.sort(function(a, b) {\n    return (b.json.workout_date || '').localeCompare(a.json.workout_date || '');\n  });\n  return matches.length > 0 ? matches[0].json : null;\n}\n\n// \u2500\u2500 BUILD OUTPUT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst result = selected.map(function(ex) {\n  const last = getLastEntry(ex.json.exercise_name);\n  let baseReps = last ? (last.workout_repetition_amount || 10) : 10;\n  let baseRounds = last ? Number(last.workout_rounds) || 3 : 3;\n  let repType = last ? (last.workout_repetition_type || 'reps') : 'reps';\n\n  if (isProgressive) {\n    if (repType === 'time') {\n      // Parse the time string e.g. \"30 sec\", \"1 min\", \"90sec\"\n      const timeStr = String(baseReps).toLowerCase().trim();\n      const timeNum = parseFloat(timeStr);\n      const isMin = timeStr.includes('min');\n      const isSec = timeStr.includes('sec');\n      if (!isNaN(timeNum)) {\n        const increased = Math.ceil(timeNum * 1.1);\n        if (isMin) {\n          baseReps = increased + ' min';\n        } else if (isSec) {\n          baseReps = increased + ' sec';\n        } else {\n          baseReps = increased + ' sec'; // fallback assume seconds\n        }\n      }\n    } else {\n      // Numeric reps \u2014 apply +10%\n      baseReps = Math.ceil(Number(baseReps) * 1.1);\n    }\n  }\n\n  return {\n    exercise_name: ex.json.exercise_name,\n    body_part: ex.json.exercise_body_part_focus,\n    movement_pattern: ex.json.exercise_movement_pattern,\n    equipment: ex.json.exercise_primary_equipment,\n    repetition_type: repType,\n    repetition_amount: baseReps,\n    rounds: baseRounds,\n    is_new_exercise: (Number(ex.json.exercise_frequency) || 0) === 0\n  };\n});\n\nreturn [{ json: {\n  body_part_focus: focusRaw,\n  volume_mode: volumeMode,\n  exercises: result\n}}];"
+        "jsCode": "// ── PARSE AGENT INTENT ───────────────────────────────────────────\nvar agentRaw = $('ai_agent_prompt_process').first().json.output;\nvar agentOutput = JSON.parse(agentRaw);\n\nvar focusRaw = (agentOutput.body_part_focus || 'full body').toLowerCase().trim();\nvar volumeMode = (agentOutput.volume_logic || 'same').toLowerCase();\nvar isProgressive = volumeMode === 'progressive';\nvar workoutSize = parseInt(agentOutput.workout_size) || 5;\n\n// ── CATALOG & HISTORY ────────────────────────────────────────────\nvar catalog = $('get_exercise_catalog').all();\nvar history = $('get_recent_workouts').all();\n\n// ── FILTER by body part ──────────────────────────────────────────\nvar pool = catalog.filter(function(ex) {\n  var bp = (ex.json.exercise_body_part_focus || '').toLowerCase();\n  if (focusRaw === 'full body') return true;\n  return bp.includes(focusRaw) || focusRaw.includes(bp);\n});\n\nif (pool.length === 0) pool = catalog;\n\n// ── SORT by frequency ascending (least used first) ───────────────\npool.sort(function(a, b) {\n  var fa = Number(a.json.exercise_frequency) || 0;\n  var fb = Number(b.json.exercise_frequency) || 0;\n  return fa - fb;\n});\n\n// ── 80/20 SPLIT ──────────────────────────────────────────────────\nvar lowCount = Math.max(1, Math.round(workoutSize * 0.2));\nvar highCount = workoutSize - lowCount;\n\nvar lowFreqSize = Math.ceil(pool.length * 0.3);\nvar highFreqSize = Math.ceil(pool.length * 0.7);\nvar lowFreqPool = pool.slice(0, lowFreqSize);\nvar highFreqPool = pool.slice(pool.length - highFreqSize);\n\nfunction pickRandom(arr, n) {\n  var shuffled = arr.slice().sort(function() { return Math.random() - 0.5; });\n  return shuffled.slice(0, Math.min(n, shuffled.length));\n}\n\nvar highPicks = pickRandom(highFreqPool, highCount);\nvar lowPicks = pickRandom(lowFreqPool, lowCount);\nvar combined = highPicks.concat(lowPicks);\n\n// ── DEDUPLICATE ──────────────────────────────────────────────────\nvar seen = {};\nvar selected = [];\nfor (var di = 0; di < combined.length; di++) {\n  var exNameCheck = (combined[di].json.exercise_name || '').toLowerCase().trim();\n  if (!seen[exNameCheck]) {\n    seen[exNameCheck] = true;\n    selected.push(combined[di]);\n  }\n}\n\n// Fill gaps caused by deduplication\nif (selected.length < workoutSize) {\n  var remaining = pool.filter(function(ex) {\n    var n = (ex.json.exercise_name || '').toLowerCase().trim();\n    return !seen[n];\n  });\n  var extras = pickRandom(remaining, workoutSize - selected.length);\n  for (var ei = 0; ei < extras.length; ei++) {\n    seen[(extras[ei].json.exercise_name || '').toLowerCase().trim()] = true;\n    selected.push(extras[ei]);\n  }\n}\n\n// ── MOVEMENT PATTERN ROTATION ────────────────────────────────────\nvar patternOrder = ['squat', 'hinge', 'push', 'pull', 'rotation', 'carry'];\nselected.sort(function(a, b) {\n  var pa = patternOrder.indexOf((a.json.exercise_movement_pattern || '').toLowerCase());\n  var pb = patternOrder.indexOf((b.json.exercise_movement_pattern || '').toLowerCase());\n  return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb);\n});\n\n// ── LOOK UP LAST USED REPS/ROUNDS ────────────────────────────────\nfunction getLastEntry(exerciseName) {\n  var nameLower = (exerciseName || '').toLowerCase().trim();\n  var namePlural = nameLower.endsWith('s') ? nameLower : nameLower + 's';\n  var nameSingular = nameLower.endsWith('s') ? nameLower.slice(0, -1) : nameLower;\n  var matches = history.filter(function(h) {\n    var hName = (h.json.workout_exercise_name || '').toLowerCase().trim();\n    return hName === nameLower || hName === namePlural || hName === nameSingular;\n  });\n  matches.sort(function(a, b) {\n    return (b.json.workout_date || '').localeCompare(a.json.workout_date || '');\n  });\n  return matches.length > 0 ? matches[0].json : null;\n}\n\n// ── BUILD OUTPUT ─────────────────────────────────────────────────\nvar result = selected.map(function(ex) {\n  var last = getLastEntry(ex.json.exercise_name);\n  var baseReps = last ? (last.workout_repetition_amount || 10) : 10;\n  var baseRounds = last ? Number(last.workout_rounds) || 3 : 3;\n  var repType = last ? (last.workout_repetition_type || 'reps') : 'reps';\n\n  if (isProgressive) {\n    if (repType === 'time') {\n      var timeStr = String(baseReps).toLowerCase().trim();\n      var timeNum = parseFloat(timeStr);\n      var isMin = timeStr.includes('min');\n      var isSec = timeStr.includes('sec');\n      if (!isNaN(timeNum)) {\n        var increased = Math.ceil(timeNum * 1.1);\n        if (isMin) {\n          baseReps = increased + ' min';\n        } else if (isSec) {\n          baseReps = increased + ' sec';\n        } else {\n          baseReps = increased + ' sec';\n        }\n      }\n    } else {\n      baseReps = Math.ceil(Number(baseReps) * 1.1);\n    }\n  }\n\n  var exResult = {};\n  exResult.exercise_name = ex.json.exercise_name;\n  exResult.body_part = ex.json.exercise_body_part_focus;\n  exResult.movement_pattern = ex.json.exercise_movement_pattern;\n  exResult.equipment = ex.json.exercise_primary_equipment;\n  exResult.repetition_type = repType;\n  exResult.repetition_amount = baseReps;\n  exResult.rounds = baseRounds;\n  exResult.is_new_exercise = (Number(ex.json.exercise_frequency) || 0) === 0;\n  exResult.muscles_worked = ex.json.exercise_muscles_worked || '';\n  exResult.intensity_type = ex.json.exercise_intensity_type || '';\n  return exResult;\n});\n\nreturn [{ json: {\n  body_part_focus: focusRaw,\n  volume_mode: volumeMode,\n  exercises: result,\n  original_request_json: JSON.stringify(agentOutput)\n}}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1246,13 +1168,13 @@
     },
     {
       "parameters": {
-        "jsCode": "// READ SOURCE DATA - use $input first, fall back to node references\nvar exercises = [];\nvar focus = 'full body';\nvar mode = 'same';\n\nvar inputData = $input.first().json;\n\nif (inputData && inputData.exercises && inputData.exercises.length > 0) {\n  exercises = inputData.exercises;\n  focus = inputData.body_part_focus || 'full body';\n  mode = inputData.volume_mode || 'same';\n} else {\n  try {\n    var genData = $('code_workout_generator').first().json;\n    if (genData && genData.exercises && genData.exercises.length > 0) {\n      exercises = genData.exercises;\n      focus = genData.body_part_focus || 'full body';\n      mode = genData.volume_mode || 'same';\n    }\n  } catch(e) {}\n\n  if (exercises.length === 0) {\n    try {\n      var modData = $('code_handle_modify').first().json;\n      if (modData && modData.exercises && modData.exercises.length > 0) {\n        exercises = modData.exercises;\n        focus = modData.body_part_focus || 'full body';\n        mode = modData.volume_mode || 'same';\n      }\n    } catch(e) {}\n  }\n}\n\n// \u2500\u2500 HEADER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst patterns = [];\nconst equipment = [];\nfor (let i = 0; i < exercises.length; i++) {\n  const e = exercises[i];\n  if (e.movement_pattern && patterns.indexOf(e.movement_pattern) === -1) {\n    patterns.push(e.movement_pattern);\n  }\n  if (e.equipment && equipment.indexOf(e.equipment) === -1) {\n    equipment.push(e.equipment);\n  }\n}\n\nconst focusLabel = focus.charAt(0).toUpperCase() + focus.slice(1);\nconst volumeLabel = mode === 'progressive' ? '+10% progressive' : 'Same as last';\n\nconst header = '**Workout Focus:** ' + focusLabel +\n  ' | **Patterns:** ' + patterns.join(', ') +\n  ' | **Volume:** ' + volumeLabel + '\\n' +\n  '**Equipment needed:** ' + equipment.join(', ') + '\\n\\n';\n\n// \u2500\u2500 TABLE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst tableHeader = '| # | Exercise | Rep Type | Amount | Rounds |';\nconst tableDivider = '|---|----------|----------|--------|--------|';\n\nconst tableRows = [];\nfor (let i = 0; i < exercises.length; i++) {\n  const ex = exercises[i];\n  const newTag = ex.is_new_exercise ? ' \ud83c\udd95' : '';\n  tableRows.push('| ' + (i + 1) + ' | ' + ex.exercise_name + newTag +\n    ' | ' + ex.repetition_type +\n    ' | ' + ex.repetition_amount +\n    ' | ' + ex.rounds + ' |');\n}\n\nconst table = [tableHeader, tableDivider].concat(tableRows).join('\\n');\n\n// \u2500\u2500 FOOTER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst footer = '\\n\\n---\\nReply with:\\n' +\n  '\u2022 **Confirm** \u2014 save this workout\\n' +\n  '\u2022 **Replace [exercise name] with [new exercise]** \u2014 swap an exercise\\n' +\n  '\u2022 **Add [exercise name]** \u2014 add a specific exercise\\n' +\n  '\u2022 **Remove #N or [exercise name]** \u2014 remove an exercise\\n' +\n  '\u2022 **Regenerate** \u2014 create a completely new suggestion';\n\nconst fullMessage = header + table + footer;\n\nreturn [{ json: {\n  suggestion_text: fullMessage,\n  exercises_json: JSON.stringify(exercises),\n  body_part_focus: focus,\n  volume_mode: mode\n}}];"
+        "jsCode": "var inputData = $input.first().json;\n\nvar exercises = [];\nvar focus = 'full body';\nvar mode = 'same';\nvar originalRequestJson = null;\nvar errorMessage = null;\n\nif (inputData && inputData.exercises && inputData.exercises.length > 0) {\n  exercises = inputData.exercises;\n  focus = inputData.body_part_focus || 'full body';\n  mode = inputData.volume_mode || 'same';\n  if (inputData.original_request_json) {\n    originalRequestJson = inputData.original_request_json;\n  }\n  if (inputData.error_message) {\n    errorMessage = inputData.error_message;\n  }\n} else {\n  try {\n    var genData = $('code_workout_generator').first().json;\n    if (genData && genData.exercises && genData.exercises.length > 0) {\n      exercises = genData.exercises;\n      focus = genData.body_part_focus || 'full body';\n      mode = genData.volume_mode || 'same';\n      if (genData.original_request_json) {\n        originalRequestJson = genData.original_request_json;\n      }\n      if (genData.error_message) {\n        errorMessage = genData.error_message;\n      }\n    }\n  } catch(e) {}\n\n  if (exercises.length === 0) {\n    try {\n      var modData = $('code_handle_modify').first().json;\n      if (modData && modData.exercises && modData.exercises.length > 0) {\n        exercises = modData.exercises;\n        focus = modData.body_part_focus || 'full body';\n        mode = modData.volume_mode || 'same';\n        if (modData.original_request_json) {\n          originalRequestJson = modData.original_request_json;\n        }\n        if (modData.error_message) {\n          errorMessage = modData.error_message;\n        }\n      }\n    } catch(e) {}\n  }\n}\n\nif (!originalRequestJson) {\n  try {\n    var stagedExisting = $('get_staged_workout').first().json.original_request_json;\n    if (stagedExisting) {\n      originalRequestJson = stagedExisting;\n    }\n  } catch(e) {}\n}\n\n// ── NEW: suggest_replacements renders a pick-one list, not the full table ──\nif (inputData && inputData.suggestion_mode) {\n  var suggestionList = [];\n  try {\n    suggestionList = JSON.parse(inputData.suggestions_json || '[]');\n  } catch(e) {\n    suggestionList = [];\n  }\n\n  var targetName = inputData.target_exercise_name || 'that exercise';\n\n  var sLines = [];\n  sLines.push('REPLACEMENT OPTIONS for ' + targetName);\n  sLines.push('-----------------------------');\n  sLines.push('');\n\n  for (var s = 0; s < suggestionList.length; s++) {\n    var sx = suggestionList[s];\n    var sTag = sx.is_new_exercise ? ' NEW' : '';\n    sLines.push((s + 1) + '. ' + sx.exercise_name + sTag);\n    sLines.push('   ' + sx.rounds + ' rounds x ' + sx.repetition_amount + ' ' + sx.repetition_type);\n    sLines.push('   Movement Pattern: ' + (sx.movement_pattern || ''));\n    sLines.push('');\n  }\n\n  sLines.push('-----------------------------');\n  sLines.push('Reply with 1, 2, or 3 to pick a replacement, or Regenerate to start over.');\n\n  return [{ json: {\n    suggestion_text: sLines.join('\\n'),\n    exercises_json: JSON.stringify(exercises),\n    body_part_focus: focus,\n    volume_mode: mode,\n    original_request_json: originalRequestJson,\n    suggestions_json: inputData.suggestions_json || '',\n    target_index: inputData.target_index !== undefined ? inputData.target_index : ''\n  }}];\n}\n\nvar focusLabel = focus.charAt(0).toUpperCase() + focus.slice(1);\nvar volumeLabel = mode === 'progressive' ? '+10% progressive' : 'Same as last';\n\nvar patterns = [];\nvar equipment = [];\nfor (var i = 0; i < exercises.length; i++) {\n  var e = exercises[i];\n  if (e.movement_pattern && patterns.indexOf(e.movement_pattern) === -1) {\n    patterns.push(e.movement_pattern);\n  }\n  if (e.equipment && equipment.indexOf(e.equipment) === -1) {\n    equipment.push(e.equipment);\n  }\n}\n\nvar lines = [];\nlines.push('WORKOUT SUGGESTION');\nlines.push('-----------------------------');\n\nif (errorMessage) {\n  lines.push('Note: ' + errorMessage);\n  lines.push('');\n}\n\nlines.push('Focus:     ' + focusLabel);\nlines.push('Volume:    ' + volumeLabel);\nlines.push('Patterns:  ' + (patterns.length > 0 ? patterns.join(', ') : 'mixed'));\nlines.push('Equipment: ' + (equipment.length > 0 ? equipment.join(', ') : 'none'));\nlines.push('-----------------------------');\nlines.push('');\n\nfor (var j = 0; j < exercises.length; j++) {\n  var ex = exercises[j];\n  var newTag = ex.is_new_exercise ? ' NEW' : '';\n  lines.push((j + 1) + '. ' + ex.exercise_name + newTag);\n  lines.push('   ' + ex.rounds + ' rounds x ' + ex.repetition_amount + ' ' + ex.repetition_type);\n  lines.push('   Body Part Focus: ' + (ex.body_part || ''));\n  lines.push('   Muscles Worked: ' + (ex.muscles_worked || ex.body_part || ''));\n  lines.push('   Movement Pattern: ' + (ex.movement_pattern || ''));\n  lines.push('');\n}\n\nlines.push('-----------------------------');\nlines.push('Reply with:');\nlines.push('> Confirm');\nlines.push('> Replace [exercise] with [new exercise]');\nlines.push('> Suggest replacements for [exercise]');\nlines.push('> Add [exercise name]');\nlines.push('> Remove #N or [exercise name]');\nlines.push('> Regenerate');\n\nvar fullMessage = lines.join('\\n');\n\nreturn [{ json: {\n  suggestion_text: fullMessage,\n  exercises_json: JSON.stringify(exercises),\n  body_part_focus: focus,\n  volume_mode: mode,\n  original_request_json: originalRequestJson,\n  suggestions_json: '',\n  target_index: ''\n}}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1440,
-        -384
+        3552,
+        -448
       ],
       "id": "6fa3cbc4-db59-4650-88e2-a841fb75bb8c",
       "name": "code_format_suggestion"
@@ -1307,7 +1229,7 @@
     },
     {
       "parameters": {
-        "jsCode": "var agentRaw = $('ai_agent_prompt_process').first().json.output;\nvar agentOutput = JSON.parse(agentRaw);\nvar action = agentOutput.action;\nvar catalog = $('get_exercise_catalog_modify').all();\nvar history = $('get_recent_workouts_modify').all();\nvar currentExercises = [];\ntry {\n  var stagedRaw = $('get_staged_workout').first().json.exercises_json;\n  if (stagedRaw && stagedRaw !== 'undefined') {\n    currentExercises = JSON.parse(stagedRaw);\n  }\n} catch(e) {\n  currentExercises = [];\n}\n\nfunction findInCatalog(name) {\n  var nameLower = name.toLowerCase().trim();\n  // Also try with 's' added or removed for plural/singular matching\n  var namePlural = nameLower.endsWith('s') ? nameLower : nameLower + 's';\n  var nameSingular = nameLower.endsWith('s') ? nameLower.slice(0, -1) : nameLower;\n\n  for (var i = 0; i < catalog.length; i++) {\n    var cat = catalog[i].json;\n    var catName = (cat.exercise_name || '').toLowerCase().trim();\n    var catNorm = (cat.exercise_name_normalized || '').toLowerCase().trim();\n\n    if (catName === nameLower || catNorm === nameLower ||\n        catName === namePlural || catName === nameSingular ||\n        catNorm === namePlural || catNorm === nameSingular) {\n      return cat;\n    }\n  }\n  return null;\n}\n\nfunction findInHistory(name) {\n  var nameLower = name.toLowerCase().trim();\n  var namePlural = nameLower.endsWith('s') ? nameLower : nameLower + 's';\n  var nameSingular = nameLower.endsWith('s') ? nameLower.slice(0, -1) : nameLower;\n  var best = null;\n  for (var i = 0; i < history.length; i++) {\n    var h = history[i].json;\n    var hName = (h.workout_exercise_name || '').toLowerCase().trim();\n    if (hName === nameLower || hName === namePlural || hName === nameSingular) {\n      if (!best || (h.workout_date || '') > (best.workout_date || '')) {\n        best = h;\n      }\n    }\n  }\n  return best;\n}\n\nfunction buildExercise(catEntry, histEntry) {\n  var repType = 'reps';\n  if (histEntry && histEntry.workout_repetition_type) {\n    repType = histEntry.workout_repetition_type;\n  }\n  var repAmount = 10;\n  if (histEntry && histEntry.workout_repetition_amount) {\n    repAmount = histEntry.workout_repetition_amount;\n  }\n  var rounds = 3;\n  if (histEntry && histEntry.workout_rounds) {\n    rounds = Number(histEntry.workout_rounds);\n  }\n  var ex = {};\n  ex.exercise_name = catEntry.exercise_name;\n  ex.body_part = catEntry.exercise_body_part_focus;\n  ex.movement_pattern = catEntry.exercise_movement_pattern;\n  ex.equipment = catEntry.exercise_primary_equipment;\n  ex.repetition_type = repType;\n  ex.repetition_amount = repAmount;\n  ex.rounds = rounds;\n  ex.is_new_exercise = (Number(catEntry.exercise_frequency) || 0) === 0;\n  return ex;\n}\n\nfunction makeResult(exercises) {\n  var r = {};\n  r.body_part_focus = 'full body';\n  r.volume_mode = 'same';\n  r.exercises = exercises;\n  return r;\n}\n\nif (action === 'regenerate') {\n  var newFocus = agentOutput.body_part_focus || 'full body';\n  var newVolume = agentOutput.volume_logic || 'same';\n  var newSize = parseInt(agentOutput.workout_size) || 5;\n  var regenData = {};\n  regenData.intent = 'generate';\n  regenData.body_part_focus = newFocus;\n  regenData.volume_logic = newVolume;\n  regenData.workout_size = newSize;\n  regenData.output = JSON.stringify(regenData);\n  return [{ json: regenData }];\n}\n\nif (action === 'replace') {\n  var exName = (agentOutput.exercise_name || '').toLowerCase().trim();\n  var newExName = (agentOutput.new_exercise_name || '').toLowerCase().trim();\n  var exIndex = agentOutput.exercise_index;\n\n  var targetIdx = -1;\n  if (exIndex !== null && exIndex !== undefined) {\n    targetIdx = exIndex - 1;\n  } else {\n    for (var i = 0; i < currentExercises.length; i++) {\n      if ((currentExercises[i].exercise_name || '').toLowerCase().trim() === exName) {\n        targetIdx = i;\n        break;\n      }\n    }\n  }\n\n  var repCat = findInCatalog(newExName);\n\n  if (targetIdx === -1) {\n    var e1 = makeResult(currentExercises);\n    e1.error_message = 'Exercise not found: ' + exName;\n    return [{ json: e1 }];\n  }\n\n  if (!repCat) {\n    var e2 = makeResult(currentExercises);\n    e2.error_message = 'Replacement not found: ' + newExName;\n    return [{ json: e2 }];\n  }\n\n  var repHist = findInHistory(newExName);\n  var newExObj = buildExercise(repCat, repHist);\n\n  var replacedList = [];\n  for (var j = 0; j < currentExercises.length; j++) {\n    if (j === targetIdx) {\n      replacedList.push(newExObj);\n    } else {\n      replacedList.push(currentExercises[j]);\n    }\n  }\n  return [{ json: makeResult(replacedList) }];\n}\n\nif (action === 'add') {\n  var addExName = (agentOutput.new_exercise_name || '').toLowerCase().trim();\n  var addCat = findInCatalog(addExName);\n\n  if (!addCat) {\n    var addErr = makeResult(currentExercises);\n    addErr.needs_new_exercise = true;\n    addErr.new_exercise_name = agentOutput.new_exercise_name;\n    return [{ json: addErr }];\n  }\n\n  var addHist = findInHistory(addExName);\n  var addExObj = buildExercise(addCat, addHist);\n  var addedList = currentExercises.slice();\n  addedList.push(addExObj);\n  return [{ json: makeResult(addedList) }];\n}\n\nif (action === 'remove') {\n  var remName = (agentOutput.exercise_name || '').toLowerCase().trim();\n  var remIndex = agentOutput.exercise_index;\n  var remTarget = -1;\n\n  if (remIndex !== null && remIndex !== undefined) {\n    remTarget = remIndex - 1;\n  } else {\n    for (var k = 0; k < currentExercises.length; k++) {\n      if ((currentExercises[k].exercise_name || '').toLowerCase().trim() === remName) {\n        remTarget = k;\n        break;\n      }\n    }\n  }\n\n  var removedList = [];\n  for (var l = 0; l < currentExercises.length; l++) {\n    if (l !== remTarget) {\n      removedList.push(currentExercises[l]);\n    }\n  }\n  return [{ json: makeResult(removedList) }];\n}\n\nvar fallback = makeResult(currentExercises);\nfallback.error_message = 'Unknown action: ' + action;\nreturn [{ json: fallback }];"
+        "jsCode": "var agentRaw = $('ai_agent_prompt_process').first().json.output;\nvar agentOutput = JSON.parse(agentRaw);\nvar action = agentOutput.action;\nvar catalog = $('get_exercise_catalog_modify').all();\nvar history = $('get_recent_workouts_modify').all();\nvar currentExercises = [];\ntry {\n  var stagedRaw = $('get_staged_workout').first().json.exercises_json;\n  if (stagedRaw && stagedRaw !== 'undefined') {\n    currentExercises = JSON.parse(stagedRaw);\n  }\n} catch(e) {\n  currentExercises = [];\n}\n\nfunction findInCatalog(name) {\n  var nameLower = name.toLowerCase().trim();\n  var namePlural = nameLower.endsWith('s') ? nameLower : nameLower + 's';\n  var nameSingular = nameLower.endsWith('s') ? nameLower.slice(0, -1) : nameLower;\n\n  for (var i = 0; i < catalog.length; i++) {\n    var cat = catalog[i].json;\n    var catName = (cat.exercise_name || '').toLowerCase().trim();\n    var catNorm = (cat.exercise_name_normalized || '').toLowerCase().trim();\n\n    if (catName === nameLower || catNorm === nameLower ||\n        catName === namePlural || catName === nameSingular ||\n        catNorm === namePlural || catNorm === nameSingular) {\n      return cat;\n    }\n  }\n  return null;\n}\n\nfunction findInHistory(name) {\n  var nameLower = name.toLowerCase().trim();\n  var namePlural = nameLower.endsWith('s') ? nameLower : nameLower + 's';\n  var nameSingular = nameLower.endsWith('s') ? nameLower.slice(0, -1) : nameLower;\n  var best = null;\n  for (var i = 0; i < history.length; i++) {\n    var h = history[i].json;\n    var hName = (h.workout_exercise_name || '').toLowerCase().trim();\n    if (hName === nameLower || hName === namePlural || hName === nameSingular) {\n      if (!best || (h.workout_date || '') > (best.workout_date || '')) {\n        best = h;\n      }\n    }\n  }\n  return best;\n}\n\nfunction buildExercise(catEntry, histEntry) {\n  var repType = 'reps';\n  if (histEntry && histEntry.workout_repetition_type) {\n    repType = histEntry.workout_repetition_type;\n  }\n  var repAmount = 10;\n  if (histEntry && histEntry.workout_repetition_amount) {\n    repAmount = histEntry.workout_repetition_amount;\n  }\n  var rounds = 3;\n  if (histEntry && histEntry.workout_rounds) {\n    rounds = Number(histEntry.workout_rounds);\n  }\n  var ex = {};\n  ex.exercise_name = catEntry.exercise_name;\n  ex.body_part = catEntry.exercise_body_part_focus;\n  ex.movement_pattern = catEntry.exercise_movement_pattern;\n  ex.equipment = catEntry.exercise_primary_equipment;\n  ex.repetition_type = repType;\n  ex.repetition_amount = repAmount;\n  ex.rounds = rounds;\n  ex.is_new_exercise = (Number(catEntry.exercise_frequency) || 0) === 0;\n  return ex;\n}\n\nfunction makeResult(exercises) {\n  var r = {};\n  r.body_part_focus = 'full body';\n  r.volume_mode = 'same';\n  r.exercises = exercises;\n  // Default to clearing any pending suggestion state. Only the\n  // suggest_replacements branch below re-populates these.\n  r.suggestions_json = '';\n  r.target_index = '';\n  try {\n    var stagedOrig = $('get_staged_workout').first().json.original_request_json;\n    if (stagedOrig && stagedOrig !== 'undefined') {\n      r.original_request_json = stagedOrig;\n    }\n  } catch(e) {}\n  return r;\n}\n\nfunction applyProgressiveOverload(repType, baseReps) {\n  if (repType === 'time') {\n    var timeStr = String(baseReps).toLowerCase().trim();\n    var timeNum = parseFloat(timeStr);\n    var isMin = timeStr.indexOf('min') !== -1;\n    var isSec = timeStr.indexOf('sec') !== -1;\n    if (!isNaN(timeNum)) {\n      var increased = Math.ceil(timeNum * 1.1);\n      if (isMin) {\n        return increased + ' min';\n      } else if (isSec) {\n        return increased + ' sec';\n      } else {\n        return increased + ' sec';\n      }\n    }\n    return baseReps;\n  }\n  return Math.ceil(Number(baseReps) * 1.1);\n}\n\nfunction getLastEntryByName(exerciseName) {\n  var nameLower = (exerciseName || '').toLowerCase().trim();\n  var matches = [];\n  for (var i = 0; i < history.length; i++) {\n    var hName = (history[i].json.workout_exercise_name || '').toLowerCase().trim();\n    if (hName === nameLower) {\n      matches.push(history[i].json);\n    }\n  }\n  matches.sort(function(a, b) {\n    return (b.workout_date || '').localeCompare(a.workout_date || '');\n  });\n  return matches.length > 0 ? matches[0] : null;\n}\n\nfunction pickRandom(arr, n) {\n  var shuffled = arr.slice().sort(function() { return Math.random() - 0.5; });\n  return shuffled.slice(0, Math.min(n, shuffled.length));\n}\n\n// ── NEW: pick candidate replacements for suggest_replacements ──\nfunction pickReplacementCandidates(targetEx, excludeList, count) {\n  var excludeLower = excludeList.map(function(n) { return (n || '').toLowerCase().trim(); });\n  var targetPattern = (targetEx.movement_pattern || '').toLowerCase();\n  var targetBodyPart = (targetEx.body_part || '').toLowerCase();\n\n  var pool = catalog.filter(function(c) {\n    var name = (c.json.exercise_name || '').toLowerCase().trim();\n    if (excludeLower.indexOf(name) !== -1) return false;\n    var pattern = (c.json.exercise_movement_pattern || '').toLowerCase();\n    return pattern === targetPattern;\n  });\n\n  if (pool.length < count) {\n    pool = catalog.filter(function(c) {\n      var name = (c.json.exercise_name || '').toLowerCase().trim();\n      if (excludeLower.indexOf(name) !== -1) return false;\n      var bp = (c.json.exercise_body_part_focus || '').toLowerCase();\n      return bp.indexOf(targetBodyPart) !== -1 || targetBodyPart.indexOf(bp) !== -1;\n    });\n  }\n\n  if (pool.length < count) {\n    pool = catalog.filter(function(c) {\n      var name = (c.json.exercise_name || '').toLowerCase().trim();\n      return excludeLower.indexOf(name) === -1;\n    });\n  }\n\n  pool.sort(function(a, b) {\n    var fa = Number(a.json.exercise_frequency) || 0;\n    var fb = Number(b.json.exercise_frequency) || 0;\n    return fa - fb;\n  });\n\n  var topSlice = pool.slice(0, Math.max(count * 3, count));\n  var picked = pickRandom(topSlice, count);\n  return picked.map(function(c) {\n    return buildExercise(c.json, findInHistory(c.json.exercise_name));\n  });\n}\n\nfunction regenerateWorkout(focusRaw, volumeMode, workoutSize) {\n  var isProgressive = volumeMode === 'progressive';\n\n  var pool = catalog.filter(function(c) {\n    var bp = (c.json.exercise_body_part_focus || '').toLowerCase();\n    if (focusRaw === 'full body') return true;\n    return bp.indexOf(focusRaw) !== -1 || focusRaw.indexOf(bp) !== -1;\n  });\n\n  if (pool.length === 0) {\n    pool = catalog.slice();\n  }\n\n  pool.sort(function(a, b) {\n    var fa = Number(a.json.exercise_frequency) || 0;\n    var fb = Number(b.json.exercise_frequency) || 0;\n    return fa - fb;\n  });\n\n  var lowCount = Math.max(1, Math.round(workoutSize * 0.2));\n  var highCount = workoutSize - lowCount;\n\n  var lowFreqSize = Math.ceil(pool.length * 0.3);\n  var highFreqSize = Math.ceil(pool.length * 0.7);\n  var lowFreqPool = pool.slice(0, lowFreqSize);\n  var highFreqPool = pool.slice(pool.length - highFreqSize);\n\n  var selected = pickRandom(highFreqPool, highCount).concat(pickRandom(lowFreqPool, lowCount));\n\n  var patternOrder = ['squat', 'hinge', 'push', 'pull', 'rotation', 'carry'];\n  selected.sort(function(a, b) {\n    var pa = patternOrder.indexOf((a.json.exercise_movement_pattern || '').toLowerCase());\n    var pb = patternOrder.indexOf((b.json.exercise_movement_pattern || '').toLowerCase());\n    return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb);\n  });\n\n  var result = selected.map(function(c) {\n    var last = getLastEntryByName(c.json.exercise_name);\n    var baseReps = last ? (last.workout_repetition_amount || 10) : 10;\n    var baseRounds = last ? Number(last.workout_rounds) || 3 : 3;\n    var repType = last ? (last.workout_repetition_type || 'reps') : 'reps';\n\n    if (isProgressive) {\n      baseReps = applyProgressiveOverload(repType, baseReps);\n    }\n\n    return {\n      exercise_name: c.json.exercise_name,\n      body_part: c.json.exercise_body_part_focus,\n      movement_pattern: c.json.exercise_movement_pattern,\n      equipment: c.json.exercise_primary_equipment,\n      repetition_type: repType,\n      repetition_amount: baseReps,\n      rounds: baseRounds,\n      is_new_exercise: (Number(c.json.exercise_frequency) || 0) === 0\n    };\n  });\n\n  return result;\n}\n\nif (action === 'regenerate') {\n  var originalRequest = null;\n  try {\n    var origRaw = $('get_staged_workout').first().json.original_request_json;\n    if (origRaw && origRaw !== 'undefined') {\n      originalRequest = JSON.parse(origRaw);\n    }\n  } catch(e) {\n    originalRequest = null;\n  }\n\n  var newFocus = (originalRequest && originalRequest.body_part_focus) || agentOutput.body_part_focus || 'full body';\n  var newVolume = (originalRequest && originalRequest.volume_logic) || agentOutput.volume_logic || 'same';\n  var newSize = (originalRequest && parseInt(originalRequest.workout_size)) || parseInt(agentOutput.workout_size) || 5;\n\n  var regenExercises = regenerateWorkout(newFocus, newVolume, newSize);\n\n  var regenResult = {};\n  regenResult.body_part_focus = newFocus;\n  regenResult.volume_mode = newVolume;\n  regenResult.exercises = regenExercises;\n  regenResult.suggestions_json = '';\n  regenResult.target_index = '';\n  regenResult.original_request_json = originalRequest ? JSON.stringify(originalRequest) : agentOutput.output;\n  return [{ json: regenResult }];\n}\n\n// ── NEW: suggest_replacements ──\nif (action === 'suggest_replacements') {\n  var sugName = (agentOutput.exercise_name || '').toLowerCase().trim();\n  var sugIndex = agentOutput.exercise_index;\n\n  var sugTargetIdx = -1;\n  if (sugIndex !== null && sugIndex !== undefined) {\n    sugTargetIdx = sugIndex - 1;\n  } else {\n    for (var m = 0; m < currentExercises.length; m++) {\n      if ((currentExercises[m].exercise_name || '').toLowerCase().trim() === sugName) {\n        sugTargetIdx = m;\n        break;\n      }\n    }\n  }\n\n  if (sugTargetIdx === -1 || !currentExercises[sugTargetIdx]) {\n    var sugErr = makeResult(currentExercises);\n    sugErr.error_message = 'Exercise not found for replacement suggestions: ' + sugName;\n    return [{ json: sugErr }];\n  }\n\n  var targetExercise = currentExercises[sugTargetIdx];\n  var excludeNames = currentExercises.map(function(e) { return e.exercise_name; });\n  var candidates = pickReplacementCandidates(targetExercise, excludeNames, 3);\n\n  var sugResult = makeResult(currentExercises);\n  sugResult.suggestions_json = JSON.stringify(candidates);\n  sugResult.target_index = sugTargetIdx;\n  sugResult.suggestion_mode = true;\n  sugResult.target_exercise_name = targetExercise.exercise_name;\n  return [{ json: sugResult }];\n}\n\n// ── NEW: replace_selection ──\nif (action === 'replace_selection') {\n  var selIdx = agentOutput.selection_index;\n  var storedSuggestionsRaw = null;\n  var storedTargetIdx = null;\n  try {\n    storedSuggestionsRaw = $('get_staged_workout').first().json.suggestions_json;\n    storedTargetIdx = $('get_staged_workout').first().json.target_index;\n  } catch(e) {}\n\n  if (!storedSuggestionsRaw || storedTargetIdx === undefined || storedTargetIdx === null || storedTargetIdx === '') {\n    var selErr = makeResult(currentExercises);\n    selErr.error_message = 'No pending replacement suggestions to select from.';\n    return [{ json: selErr }];\n  }\n\n  var storedSuggestions = [];\n  try {\n    storedSuggestions = JSON.parse(storedSuggestionsRaw);\n  } catch(e) {\n    storedSuggestions = [];\n  }\n\n  var pickIdx = (selIdx !== null && selIdx !== undefined) ? (selIdx - 1) : -1;\n  if (pickIdx < 0 || pickIdx >= storedSuggestions.length) {\n    var selErr2 = makeResult(currentExercises);\n    selErr2.error_message = 'Invalid selection: ' + selIdx;\n    return [{ json: selErr2 }];\n  }\n\n  var chosenExercise = storedSuggestions[pickIdx];\n  var tIdx = Number(storedTargetIdx);\n\n  var finalList = [];\n  for (var p = 0; p < currentExercises.length; p++) {\n    if (p === tIdx) {\n      finalList.push(chosenExercise);\n    } else {\n      finalList.push(currentExercises[p]);\n    }\n  }\n\n  return [{ json: makeResult(finalList) }];\n}\n\nif (action === 'replace') {\n  var exName = (agentOutput.exercise_name || '').toLowerCase().trim();\n  var newExName = (agentOutput.new_exercise_name || '').toLowerCase().trim();\n  var exIndex = agentOutput.exercise_index;\n\n  var targetIdx = -1;\n  if (exIndex !== null && exIndex !== undefined) {\n    targetIdx = exIndex - 1;\n  } else {\n    for (var i = 0; i < currentExercises.length; i++) {\n      if ((currentExercises[i].exercise_name || '').toLowerCase().trim() === exName) {\n        targetIdx = i;\n        break;\n      }\n    }\n  }\n\n  var repCat = findInCatalog(newExName);\n\n  if (targetIdx === -1) {\n    var e1 = makeResult(currentExercises);\n    e1.error_message = 'Exercise not found: ' + exName;\n    return [{ json: e1 }];\n  }\n\n  if (!repCat) {\n    var e2 = makeResult(currentExercises);\n    e2.error_message = 'Replacement not found: ' + newExName;\n    return [{ json: e2 }];\n  }\n\n  var repHist = findInHistory(newExName);\n  var newExObj = buildExercise(repCat, repHist);\n\n  var replacedList = [];\n  for (var j = 0; j < currentExercises.length; j++) {\n    if (j === targetIdx) {\n      replacedList.push(newExObj);\n    } else {\n      replacedList.push(currentExercises[j]);\n    }\n  }\n  return [{ json: makeResult(replacedList) }];\n}\n\nif (action === 'add') {\n  var addExName = (agentOutput.new_exercise_name || '').toLowerCase().trim();\n  var addCat = findInCatalog(addExName);\n\n  if (!addCat) {\n    var addErr = makeResult(currentExercises);\n    addErr.needs_new_exercise = true;\n    addErr.new_exercise_name = agentOutput.new_exercise_name;\n    return [{ json: addErr }];\n  }\n\n  var addHist = findInHistory(addExName);\n  var addExObj = buildExercise(addCat, addHist);\n  var addedList = currentExercises.slice();\n  addedList.push(addExObj);\n  return [{ json: makeResult(addedList) }];\n}\n\nif (action === 'remove') {\n  var remName = (agentOutput.exercise_name || '').toLowerCase().trim();\n  var remIndex = agentOutput.exercise_index;\n  var remTarget = -1;\n\n  if (remIndex !== null && remIndex !== undefined) {\n    remTarget = remIndex - 1;\n  } else {\n    for (var k = 0; k < currentExercises.length; k++) {\n      if ((currentExercises[k].exercise_name || '').toLowerCase().trim() === remName) {\n        remTarget = k;\n        break;\n      }\n    }\n  }\n\n  var removedList = [];\n  for (var l = 0; l < currentExercises.length; l++) {\n    if (l !== remTarget) {\n      removedList.push(currentExercises[l]);\n    }\n  }\n  return [{ json: makeResult(removedList) }];\n}\n\nvar fallback = makeResult(currentExercises);\nfallback.error_message = 'Unknown action: ' + action;\nreturn [{ json: fallback }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1407,7 +1329,11 @@
           "mappingMode": "defineBelow",
           "value": {
             "session_id": "={{ $('When chat message received').first().json.sessionId }}",
-            "exercises_json": "={{ $json.exercises_json }}"
+            "exercises_json": "={{ $json.exercises_json }}",
+            "body_part_focus": "={{ $json.body_part_focus }}",
+            "suggestions_json": "={{ $json.suggestions_json !== undefined ? $json.suggestions_json : '' }}",
+            "target_index": "={{ $json.target_index !== undefined ? $json.target_index : '' }}",
+            "original_request_json": "={{ $json.original_request_json !== undefined ? $json.original_request_json : '' }}"
           },
           "matchingColumns": [
             "session_id"
@@ -1431,6 +1357,46 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true
+            },
+            {
+              "id": "body_part_focus",
+              "displayName": "body_part_focus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "suggestions_json",
+              "displayName": "suggestions_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "target_index",
+              "displayName": "target_index",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "original_request_json",
+              "displayName": "original_request_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
             }
           ],
           "attemptToConvertTypes": false,
@@ -1441,8 +1407,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1648,
-        -320
+        3792,
+        -448
       ],
       "id": "1040ca0f-c60a-45e0-b98f-1f83287606b4",
       "name": "save_staged_workout",
@@ -1572,7 +1538,7 @@
     },
     {
       "parameters": {
-        "jsCode": "var stagedRaw = $('get_staged_workout_confirm').first().json.exercises_json;\nvar exercises = [];\n\ntry {\n  if (stagedRaw) {\n    var jsonStart = stagedRaw.indexOf('[');\n    if (jsonStart >= 0) {\n      stagedRaw = stagedRaw.substring(jsonStart);\n    }\n    exercises = JSON.parse(stagedRaw);\n  }\n} catch(e) {\n  exercises = [];\n}\n\nvar today = new Date().toISOString().split('T')[0];\n\nvar result = {};\nresult.intent = 'log';\nresult.workout_date = today;\nresult.workout_type_name = 'full body';\nresult.exercises = exercises.map(function(ex) {\n  var mapped = {};\n  mapped.exercise_name = ex.exercise_name;\n  mapped.rounds = ex.rounds;\n  mapped.repetition_type = ex.repetition_type;\n  mapped.repetition_amount = ex.repetition_amount;\n  mapped.workout_type_name = 'full body';\n  mapped.workout_date = today;\n  return mapped;\n});\n\nreturn [{ json: result }];"
+        "jsCode": "var stagedRaw = $('get_staged_workout_confirm').first().json.exercises_json;\nvar stagedFocus = $('get_staged_workout_confirm').first().json.body_part_focus || 'full body';\nvar exercises = [];\n\ntry {\n  if (stagedRaw) {\n    var jsonStart = stagedRaw.indexOf('[');\n    if (jsonStart >= 0) {\n      stagedRaw = stagedRaw.substring(jsonStart);\n    }\n    exercises = JSON.parse(stagedRaw);\n  }\n} catch(e) {\n  exercises = [];\n}\n\nvar today = new Date().toISOString().split('T')[0];\nvar result = {};\nresult.intent = 'log';\nresult.workout_date = today;\nresult.workout_type_name = stagedFocus;\nresult.exercises = exercises.map(function(ex) {\n  var mapped = {};\n  mapped.exercise_name = ex.exercise_name;\n  mapped.rounds = ex.rounds;\n  mapped.repetition_type = ex.repetition_type;\n  mapped.repetition_amount = ex.repetition_amount;\n  mapped.workout_type_name = stagedFocus;\n  mapped.workout_date = today;\n  return mapped;\n});\nreturn [{ json: result }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1582,32 +1548,948 @@
       ],
       "id": "a4359a9d-54a8-4641-9ef8-829ec70e40fb",
       "name": "code_confirm_to_log"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4150d825-259e-4db4-b038-62a31a377c28",
+              "name": "response_text",
+              "value": "={{ $('code_format_suggestion').first().json.suggestion_text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4192,
+        -432
+      ],
+      "id": "a3570893-a377-435a-9774-ab01abe2aca8",
+      "name": "prepare_response"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 14
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        176
+      ],
+      "id": "dd4c890a-c866-4def-9499-9e515f852265",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are a workout AI agent with two modes: LOG and GENERATE.\n\nYou do not chat. You do not explain. You do not ask questions.\nYou only output valid JSON. Nothing else.\n\n---\n\nSTEP 1 — DETECT INTENT\n\nRead the user message and determine which intent applies:\n\nLOG intent — user is describing a workout they did:\n  Trigger phrases: \"today I did\", \"I trained\", \"my workout was\", \"log\", \"I did\"\n\nGENERATE intent — user wants a workout suggestion:\n  Trigger phrases: \"suggest\", \"generate\", \"give me a workout\", \"what should I do\", \n  \"create a workout\", \"workout idea\", \"remix\", \"plan a workout\"\n\nCONFIRM intent — user is approving a suggested workout to be saved:\n  Trigger phrases: \"confirm\", \"log it\", \"save this\", \"yes\", \"looks good\", \"do it\"\n\nMODIFY intent — user wants to change the current suggestion:\n  Trigger phrases: \"replace #N\", \"swap #N\", \"regenerate\", \"new suggestion\", \"add [exercise]\"\n\n---\n\nSTEP 2 — OUTPUT THE CORRECT JSON\n\nFor LOG intent, output exactly this schema:\n{\n  \"intent\": \"log\",\n  \"workout_date\": \"YYYY-MM-DD\",\n  \"workout_type_name\": \"string\",\n  \"exercises\": [\n    {\n      \"exercise_name\": \"string\",\n      \"rounds\": number,\n      \"repetition_type\": \"reps | seconds| time | amrap\",\n      \"repetition_amount\": number | string\n    }\n  ]\n}\n\nLOG parsing rules:\n1. Identify each distinct exercise.\n2. Normalize exercise names — canonical, singular form.\n   - ONLY remove equipment prefixes if the exercise is universally known without it \n     (e.g. \"Barbell Squat\" → \"Squat\", \"Dumbbell Bicep Curl\" → \"Bicep Curl\").\n   - NEVER remove equipment from the name if it is part of the exercise's identity \n     (e.g. \"Kettlebell Swing\", \"Landmine Press\", \"Dumbbell Clean\" must keep their equipment word).\n   - If unsure whether to remove equipment, keep it in the name.\n   - Do not abbreviate or shorten multi-word exercise names.\n3. Repetition type: use \"reps\" for counted reps (amount must be a number), \"time\" for time-based (include sec/min), \"amrap\" only if stated.\n4. Rounds must always be filled in.\n5. Do not invent missing values.\n6. Infer workout_type_name from body part targeted if not stated. Pick from: full body, lower body, upper body, core, back, chest.\n7. workout_date is always {{ $today.toFormat('yyyy-MM-dd') }} unless stated otherwise.\n\n---\n\nFor GENERATE intent, output exactly this schema:\n{\n  \"intent\": \"generate\",\n  \"body_part_focus\": \"full body | lower body | upper body | core | back | chest\",\n  \"volume_logic\": \"progressive | same\",\n  \"workout_size\": number\n}\n\nGENERATE rules:\n- body_part_focus: extract from prompt. Default to \"full body\" if not stated.\n- volume_logic: \"progressive\" if user says add reps/increase/progressive. \"same\" if user says same as last/repeat. Default: \"same\".\n- workout_size: extract if user specifies (e.g. \"give me 6 exercises\"). Default: 8.\n\n---\n\nFor CONFIRM intent, output exactly and only this — nothing else:\n{\n  \"intent\": \"confirm_log\"\n}\n\nDo NOT attempt to reconstruct the exercise list.\nDo NOT include exercises, workout_date or workout_type_name.\nThe workflow will retrieve the full workout from storage.\nTrigger phrases: \"confirm\", \"log it\", \"save this\", \"yes\", \"looks good\", \"do it\"\n\nCONFIRM rules:\n- Read the exercises exactly as they appeared in the last suggestion\n- Do not change any values — use the exact reps, rounds and rep type from the suggestion\n- workout_date is always {{ $today.toFormat('yyyy-MM-dd') }} unless the user stated otherwise\n- workout_type_name should match the body part focus from the suggestion\n\n---\n\nFor MODIFY intent, output exactly this schema:\n{\n  \"intent\": \"modify\",\n  \"action\": \"replace | suggest_replacements | replace_selection | add | remove | regenerate\",\n  \"exercise_name\": \"string or null\",\n  \"new_exercise_name\": \"string or null\",\n  \"exercise_index\": number or null,\n  \"selection_index\": number or null,\n  \"new_repetition_type\": \"reps | time | amrap | null\",\n  \"new_repetition_amount\": number | string | null,\n  \"new_rounds\": number | null\n}\n\nMODIFY rules:\n- action \"replace\": user specifies exactly which exercise to swap in.\n  exercise_name or exercise_index identifies which to remove.\n  new_exercise_name is the replacement.\n- action \"suggest_replacements\": user wants options to choose from.\n  Trigger phrases: \"suggest replacements for\", \"what can I replace X with\",\n  \"give me options for\", \"show me alternatives for\", \"what else can I do instead of\"\n  exercise_name or exercise_index identifies which exercise to get suggestions for.\n  new_exercise_name is null. selection_index is null.\n- action \"replace_selection\": user is picking from previously shown suggestions.\n  Trigger: single number reply \"1\", \"2\", or \"3\", or \"option 1/2/3\", \"I'll take 2\"\n  selection_index is 1, 2, or 3.\n  exercise_name and new_exercise_name are null.\n  Only output this when the previous message showed replacement suggestions.\n- action \"add\": user wants to add a specific named exercise.\n  new_exercise_name is the exercise to add.\n- action \"remove\": user wants to remove an exercise.\n  exercise_name or exercise_index identifies which one.\n- action \"regenerate\": discard current suggestion and generate completely new one.\n  All other fields null.\n\nEXERCISE NAME ACCURACY FOR MODIFY INTENT:\nWhen identifying an exercise to replace or remove, output the exercise_name\nexactly as it appeared in the suggestion shown to the user.\nNever abbreviate, shorten, or paraphrase the exercise name.\n\n---\n\nCRITICAL RULES (apply to all intents):\n- Output JSON only. No markdown. No comments. No extra text. No explanations.\n- Never wrap in code blocks.\n- After the workflow runs, do NOT summarize. Display the exact text from the final node.\n- Once JSON is output, your job is finished."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -256,
+        0
+      ],
+      "id": "0df68b5f-855d-4ac9-942a-d7bb88780b2f",
+      "name": "ai_agent_prompt_process",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-sonnet-4-6",
+          "mode": "list",
+          "cachedResultName": "Claude Sonnet 4.6"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        176
+      ],
+      "id": "ef1f5141-5e1c-4e82-9217-1bca95ef6d2a",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "XvkLMznLZ13HQ2Yl",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-sonnet-4-6",
+          "mode": "list",
+          "cachedResultName": "Claude Sonnet 4.6"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        1936,
+        240
+      ],
+      "id": "1eef78dc-efd7-49d2-9110-7c615dcf2241",
+      "name": "Anthropic Chat Model1",
+      "credentials": {
+        "anthropicApi": {
+          "id": "XvkLMznLZ13HQ2Yl",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b9c6032a-8f4c-428d-91f1-2abb7516ba43",
+              "leftValue": "={{ $json.needs_new_exercise }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1360,
+        -144
+      ],
+      "id": "6be61134-a445-4d00-b013-2f9f58aa63d8",
+      "name": "check_needs_new_exercise"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "709e9c86-e292-4aae-863e-4f429c422d13",
+              "name": "=exercise_name_normalized",
+              "value": "={{ $json.new_exercise_name.toLowerCase().trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1808,
+        -272
+      ],
+      "id": "be68e5a7-359a-4fa9-8e80-db992e8751f8",
+      "name": "prep_new_exercise_name"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Role: Act as a professional fitness data annotator.\n\nTask: Based on the exercise name '{{ $json.exercise_name_normalized }}', provide the following metadata.\n\nConstraint - Categorical Values: For the following fields, you must select from the provided list. Use a \"/\" for combinations (e.g., \"core/upper body\").\n\nbody part focus: core, full body, lower body, upper body\n\nprimary equipment: machine (cable), bodyweight, kettlebell, dumbbell, plate, box, band, barbell, stability ball, leg press machine, bench\n\nmovement pattern: rotation, push, pull, hinge, squat\n\nintensity type: endurance, strength, power, hypertrophy\n\nConstraint - Content:\n\nDescription: Exactly 1 short sentence.\n\nKey Cues: Focused on safety and form.\n\nNormalized Name: Return the input '{{ $json.exercise_name_normalized }}' exactly as provided.\n\nOutput Format: Return ONLY a valid JSON object. Do not include conversational text.\n\n{\n  \"exercise_name\": \"string (Pretty version, e.g., 'Oh Marches')\",\n  \"exercise_body_part_focus\": \"string\",\n  \"exercise_primary_equipment\": \"string\",\n  \"exercise_movement_pattern\": \"string\",\n  \"exercise_intensity_type\": \"string\",\n  \"exercise_description\": \"string\",\n  \"exercise_muscles_worked\": \"string\",\n  \"exercise_key_cues_safety\": \"string\",\n  \"exercise_non_machine_alternative\": \"string\",\n  \"exercise_name_normalized\": \"string\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2016,
+        -272
+      ],
+      "id": "cd234963-1757-47bf-bf54-4b643c342824",
+      "name": "ai_agent_exercise_info_modify"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        2016,
+        -128
+      ],
+      "id": "e407b518-0024-453e-a1ef-9f8a75042cf1",
+      "name": "Anthropic Chat Model2",
+      "credentials": {
+        "anthropicApi": {
+          "id": "XvkLMznLZ13HQ2Yl",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 14
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2112,
+        -128
+      ],
+      "id": "b7521793-d941-4ca8-abaa-bd2d3d1a943d",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 1. Clean the AI string by removing Markdown backticks and whitespace\nlet rawOutput = $input.item.json.output || \"\";\nlet cleanedOutput = rawOutput.replace(/```json/g, \"\").replace(/```/g, \"\").trim();\n\n// 2. Parse the cleaned string\nlet aiMetadata;\ntry {\n  aiMetadata = JSON.parse(cleanedOutput);\n} catch (e) {\n  // Fallback if the AI output is completely garbled\n  aiMetadata = { exercise_name: \"Error Parsing Name\" };\n}\n\n// 3. Return with the PENDING flag for our batch ID logic\nreturn {\n  ...aiMetadata,\n  exercise_id: \"PENDING\"\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2368,
+        -272
+      ],
+      "id": "907eae6f-2beb-4620-8001-f7c1a9d3102d",
+      "name": "code_json_output3"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "exercise_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "exercise_id": "={{ $json.exercise_id }}",
+            "exercise_name": "={{ $json.exercise_name }}",
+            "exercise_body_part_focus": "={{ $json.exercise_body_part_focus }}",
+            "exercise_primary_equipment": "={{ $json.exercise_primary_equipment }}",
+            "exercise_movement_pattern": "={{ $json.exercise_movement_pattern }}",
+            "exercise_intensity_type": "={{ $json.exercise_intensity_type }}",
+            "exercise_muscles_worked": "={{ $json.exercise_muscles_worked }}",
+            "exercise_description": "={{ $json.exercise_description }}",
+            "exercise_key_cues_safety": "={{ $json.exercise_key_cues_safety }}",
+            "exercise_non_machine_alternative": "={{ $json.exercise_non_machine_alternative }}",
+            "exercise_name_normalized": "={{ $json.exercise_name_normalized }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "exercise_id",
+              "displayName": "exercise_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_name",
+              "displayName": "exercise_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_body_part_focus",
+              "displayName": "exercise_body_part_focus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_primary_equipment",
+              "displayName": "exercise_primary_equipment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_movement_pattern",
+              "displayName": "exercise_movement_pattern",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_intensity_type",
+              "displayName": "exercise_intensity_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_description",
+              "displayName": "exercise_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_muscles_worked",
+              "displayName": "exercise_muscles_worked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_key_cues_safety",
+              "displayName": "exercise_key_cues_safety",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_non_machine_alternative",
+              "displayName": "exercise_non_machine_alternative",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_name_normalized",
+              "displayName": "exercise_name_normalized",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_frequency",
+              "displayName": "exercise_frequency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 1",
+              "displayName": "Column 1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 2",
+              "displayName": "Column 2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 3",
+              "displayName": "Column 3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 4",
+              "displayName": "Column 4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 5",
+              "displayName": "Column 5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 6",
+              "displayName": "Column 6",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 7",
+              "displayName": "Column 7",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 8",
+              "displayName": "Column 8",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 9",
+              "displayName": "Column 9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 10",
+              "displayName": "Column 10",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 11",
+              "displayName": "Column 11",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 12",
+              "displayName": "Column 12",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 13",
+              "displayName": "Column 13",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 14",
+              "displayName": "Column 14",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2576,
+        -272
+      ],
+      "id": "aa613d4d-ac97-4318-9b34-181b35fd6b2a",
+      "name": "append_new_exercise_modify",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "exercise_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "exercise_id",
+              "lookupValue": "PENDING"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2784,
+        -272
+      ],
+      "id": "cc6963fe-d3a4-458e-9e90-3a74ef8e8faa",
+      "name": "get_pending_exercise_id_modify",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Reference the 'get_exercise_catalog_modify' node from earlier in the MODIFY branch.\n// This node contains the clean state before any 'PENDING' rows were added.\nconst catalogItems = $(\"get_exercise_catalog_modify\").all();\n\n// 2. Extract numeric IDs and find the true Maximum\n// We use Number() and filter(isFinite) to ensure we don't hit NaN errors\nconst existingIds = catalogItems\n  .map(item => Number(item.json.exercise_id))\n  .filter(id => Number.isFinite(id));\n\nconst currentMax = existingIds.length > 0 ? Math.max(...existingIds) : 0;\n\n// 3. Process the new exercise needing an ID (from get_pending_exercise_id_modify)\nconst pendingExercises = $input.all();\n\nreturn pendingExercises.map((item, index) => {\n  return {\n    json: {\n      ...item.json,\n      // Increment based on position in the current batch (1-based index)\n      exercise_id: currentMax + (index + 1),\n      is_new: true           // EXPLICITLY RE-ASSERT THIS HERE\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2992,
+        -272
+      ],
+      "id": "3dfb37fa-2e3e-4efb-8e72-8b5be90ea58f",
+      "name": "code_exercise_id_modify"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY",
+          "mode": "list",
+          "cachedResultName": "fitness_exercise_catalog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "exercise_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W8GpMP92sq7Kd6ZAhx2rJU65B6FMNCWgtJWZzjWWCrY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "exercise_id": "={{ $json.exercise_id }}",
+            "exercise_name_normalized": "={{ $json.exercise_name_normalized }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "exercise_id",
+              "displayName": "exercise_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exercise_name",
+              "displayName": "exercise_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_body_part_focus",
+              "displayName": "exercise_body_part_focus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_primary_equipment",
+              "displayName": "exercise_primary_equipment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_movement_pattern",
+              "displayName": "exercise_movement_pattern",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_intensity_type",
+              "displayName": "exercise_intensity_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_description",
+              "displayName": "exercise_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_muscles_worked",
+              "displayName": "exercise_muscles_worked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_key_cues_safety",
+              "displayName": "exercise_key_cues_safety",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_non_machine_alternative",
+              "displayName": "exercise_non_machine_alternative",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exercise_name_normalized",
+              "displayName": "exercise_name_normalized",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "exercise_frequency",
+              "displayName": "exercise_frequency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 1",
+              "displayName": "Column 1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 2",
+              "displayName": "Column 2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 3",
+              "displayName": "Column 3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 4",
+              "displayName": "Column 4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 5",
+              "displayName": "Column 5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 6",
+              "displayName": "Column 6",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 7",
+              "displayName": "Column 7",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 8",
+              "displayName": "Column 8",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 9",
+              "displayName": "Column 9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 10",
+              "displayName": "Column 10",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 11",
+              "displayName": "Column 11",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 12",
+              "displayName": "Column 12",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 13",
+              "displayName": "Column 13",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Column 14",
+              "displayName": "Column 14",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3232,
+        -144
+      ],
+      "id": "a13882a5-10f0-48d7-a610-1499062735ab",
+      "name": "update_exercise_id_modify",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Vgv8FNLIOOhC4Xyy",
+          "name": "GoogleAuthentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "var modifyData = {};\ntry {\n  modifyData = $('code_handle_modify').first().json;\n} catch (e) {\n  modifyData = {};\n}\n\nvar newIdData = {};\ntry {\n  newIdData = $('code_exercise_id_modify').first().json;\n} catch (e) {\n  newIdData = {};\n}\n\nvar currentExercises = modifyData.exercises || [];\n\nvar newExercise = {};\nnewExercise.exercise_name = newIdData.exercise_name;\nnewExercise.body_part = newIdData.exercise_body_part_focus;\nnewExercise.movement_pattern = newIdData.exercise_movement_pattern;\nnewExercise.equipment = newIdData.exercise_primary_equipment;\nnewExercise.repetition_type = 'reps';\nnewExercise.repetition_amount = 10;\nnewExercise.rounds = 3;\nnewExercise.is_new_exercise = true;\n\nvar addedList = currentExercises.slice();\naddedList.push(newExercise);\n\nvar result = {};\nresult.body_part_focus = modifyData.body_part_focus || 'full body';\nresult.volume_mode = modifyData.volume_mode || 'same';\nresult.exercises = addedList;\nresult.suggestions_json = '';\nresult.target_index = '';\nif (modifyData.original_request_json !== undefined && modifyData.original_request_json !== null && modifyData.original_request_json !== '') {\n  result.original_request_json = modifyData.original_request_json;\n}\n\nreturn [{ json: result }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        -272
+      ],
+      "id": "3196b98b-8f14-410b-ab9f-f5fb61614d4e",
+      "name": "code_resume_add"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b4735321-d9f2-4c0b-928c-840176e9c02a",
+              "name": "=response_text",
+              "value": "={{ $json.response_text || $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6064,
+        32
+      ],
+      "id": "5ac74124-7e8c-477a-be35-acf361fc3b5a",
+      "name": "prepare_final_response"
     }
   ],
   "pinData": {},
   "connections": {
-    "OpenAI Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "ai_agent_prompt_process",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Simple Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "ai_agent_prompt_process",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "When chat message received": {
       "main": [
         [
@@ -1686,17 +2568,6 @@
         ]
       ]
     },
-    "OpenAI Chat Model1": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "ai_agent_exercise_info",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Simple Memory1": {
       "ai_memory": [
         [
@@ -1756,17 +2627,6 @@
         [
           {
             "node": "append_new_exercise",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "ai_agent_prompt_process": {
-      "main": [
-        [
-          {
-            "node": "route_by_intent",
             "type": "main",
             "index": 0
           }
@@ -1837,7 +2697,7 @@
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "prepare_final_response",
             "type": "main",
             "index": 0
           }
@@ -2005,7 +2865,7 @@
       "main": [
         [
           {
-            "node": "code_format_suggestion",
+            "node": "check_needs_new_exercise",
             "type": "main",
             "index": 0
           }
@@ -2038,7 +2898,7 @@
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "prepare_response",
             "type": "main",
             "index": 0
           }
@@ -2095,6 +2955,194 @@
           }
         ]
       ]
+    },
+    "prepare_response": {
+      "main": [
+        [
+          {
+            "node": "prepare_final_response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ai_agent_prompt_process": {
+      "main": [
+        [
+          {
+            "node": "route_by_intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "ai_agent_prompt_process",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ai_agent_prompt_process",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ai_agent_exercise_info",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check_needs_new_exercise": {
+      "main": [
+        [
+          {
+            "node": "prep_new_exercise_name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "code_format_suggestion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prep_new_exercise_name": {
+      "main": [
+        [
+          {
+            "node": "ai_agent_exercise_info_modify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ai_agent_exercise_info_modify",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "ai_agent_exercise_info_modify",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ai_agent_exercise_info_modify": {
+      "main": [
+        [
+          {
+            "node": "code_json_output3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_json_output3": {
+      "main": [
+        [
+          {
+            "node": "append_new_exercise_modify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "append_new_exercise_modify": {
+      "main": [
+        [
+          {
+            "node": "get_pending_exercise_id_modify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_pending_exercise_id_modify": {
+      "main": [
+        [
+          {
+            "node": "code_exercise_id_modify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_exercise_id_modify": {
+      "main": [
+        [
+          {
+            "node": "update_exercise_id_modify",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "code_resume_add",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_resume_add": {
+      "main": [
+        [
+          {
+            "node": "code_format_suggestion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prepare_final_response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -2102,7 +3150,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "22f6ddd7-5100-4433-aa77-f70d0545b0af",
+  "versionId": "8c978c80-0a3c-455e-b0f0-8ed7e3cc8996",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "48993650a99eead3ee6bba9fa40731f296d1731d08b417e885f61d796ee98abd"

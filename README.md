@@ -2,7 +2,7 @@
 
 A chat-driven fitness tracker built on n8n. It logs workouts through natural conversation, generates tailored workout suggestions from training history, and maintains a self-growing exercise catalog — no manual data entry beyond describing what you did.
 
-> **Snapshot notice:** this repo reflects the production workflow as of **August 2026**. It is a point-in-time export, not a live mirror — the running system may have evolved since. See [`DESIGN.md`](./DESIGN.md) for full technical detail.
+> **Snapshot notice:** this repo reflects the production workflow as of **September 2026**. It is a point-in-time export, not a live mirror — the running system may have evolved since. See [`DESIGN.md`](./DESIGN.md) for full technical detail.
 
 Companion repo: analytics built on the data this agent produces → [workout-analysis](https://github.com/nlavrincikova/workout-analysis)
 
@@ -13,7 +13,7 @@ Companion repo: analytics built on the data this agent produces → [workout-ana
 Talk to it like a training log:
 - *"Today I did 3 rounds of 12 squats and 10 pushups"* → logs the session, matches or creates catalog entries
 - *"Suggest a lower body workout"* → generates a session from training history, balanced across movement patterns
-- *"Replace squats with lunges"* / *"Add plank"* / *"Regenerate"* → adjusts the suggestion before you commit
+- *"Replace squats with lunges"* / *"Suggest replacements for squats"* / *"Add plank"* / *"Remove #2"* / *"Regenerate"* → adjusts the suggestion before you commit (adding an exercise that isn't in the catalog creates it on the fly)
 - *"Confirm"* → writes the approved session to the log
 
 ## Architecture
@@ -24,7 +24,7 @@ flowchart TD
 
     B -->|log| C["Parse & normalize\nexercises"]
     B -->|generate| D["Select exercises\n80/20 frequency split +\nmovement pattern rotation"]
-    B -->|modify| E["Apply replace / add /\nremove / regenerate"]
+    B -->|modify| E["Apply replace / suggest /\nadd / remove / regenerate"]
     B -->|confirm| F["Retrieve staged\nworkout"]
 
     C --> G["Match against catalog\n— new exercises get\nAI-generated metadata"]
@@ -60,14 +60,14 @@ Full column-level spec in [`DESIGN.md`](./DESIGN.md).
 ## Stack
 
 - **Orchestration:** n8n (self-hosted)
-- **LLM:** OpenAI (agent reasoning, intent parsing, metadata generation)
-- **Storage:** Google Sheets (Phase 1 — Notion migration planned, see `DESIGN.md` §3.2)
-- **Frontend:** custom HTML/JS chat page served as a separate n8n workflow
+- **LLM:** Anthropic Claude Sonnet (agent reasoning, intent parsing, metadata generation)
+- **Storage:** Google Sheets (Phase 1 — Notion migration planned, see `DESIGN.md` §4.2)
+- **Frontend:** custom HTML/JS chat page served as a separate n8n workflow, with session persistence
 
 ## Repo contents
 
 - `DESIGN.md` — full technical design: data model, node-by-node flow reference, known issues, migration plan
-- `fitness_exercise_catalog_20260326.json` — main LOG/GENERATE/MODIFY/CONFIRM workflow export
+- `workout_tracker.json` — main LOG/GENERATE/MODIFY/CONFIRM workflow export
 - `workout_tracker_page.json` — chat frontend workflow
 - `workout_tracker_get_staged_workout_api.json` — supporting API endpoint for session state
 
