@@ -4,15 +4,17 @@
     {
       "parameters": {
         "public": true,
-        "options": {}
+        "options": {
+          "responseMode": "lastNode"
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.4,
       "position": [
-        -416,
-        0
+        -832,
+        -432
       ],
-      "id": "fc6093bc-e6ee-4c85-90e4-adbfc2e34732",
+      "id": "56ec66d0-64ba-42b4-881a-4f7ba8221425",
       "name": "When chat message received",
       "webhookId": "REDACTED-REGENERATED-ON-IMPORT"
     },
@@ -33,10 +35,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1248,
-        0
+        832,
+        -432
       ],
-      "id": "f97946cc-770b-4117-860d-eb77e9fe1579",
+      "id": "bb6685ea-87c3-4c4b-9a1e-c587fae997b3",
       "name": "edit_exercise_name"
     },
     {
@@ -60,10 +62,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1456,
-        0
+        1040,
+        -432
       ],
-      "id": "3dbb5ca7-2d8d-47c7-9365-edf0fbdbfba6",
+      "id": "7a3f49fc-3a26-42f3-bedc-43c0d77b2248",
       "name": "get_exercise_list",
       "executeOnce": true,
       "credentials": {
@@ -82,10 +84,10 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        1024,
-        16
+        608,
+        -416
       ],
-      "id": "6c67e6cf-f972-4311-9ee8-2190884fb535",
+      "id": "caf5e242-01b2-4db8-9c93-e8a5c9443255",
       "name": "split_out_exercise"
     },
     {
@@ -95,10 +97,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1664,
-        0
+        1248,
+        -432
       ],
-      "id": "a7c4f86b-06fd-4c79-a362-1904972f3462",
+      "id": "a0b8947b-9ef6-4ab9-8b27-dd5c197de647",
       "name": "code_exercise_match"
     },
     {
@@ -128,10 +130,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        1840,
-        48
+        1424,
+        -384
       ],
-      "id": "7d651589-3f86-4163-b6ef-31dfa5f94d67",
+      "id": "5b21ee7d-5260-4dd6-ba15-150075cdb3f5",
       "name": "filter_new_exercise"
     },
     {
@@ -141,10 +143,10 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        2176,
-        240
+        1760,
+        -192
       ],
-      "id": "cf497c67-725b-456d-a12e-29b7f6e22462",
+      "id": "3496f74e-6d13-4381-9f0f-20784656a813",
       "name": "Simple Memory1"
     },
     {
@@ -176,10 +178,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3168,
-        176
+        2752,
+        -256
       ],
-      "id": "7b67d901-5ced-4a17-a5bb-f015ef2384ae",
+      "id": "c3416751-3e30-4eaf-9bdb-fe3cb9793750",
       "name": "get_pending_exercise_id",
       "executeOnce": true,
       "credentials": {
@@ -196,10 +198,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3376,
-        176
+        2960,
+        -256
       ],
-      "id": "667d05bb-7871-4886-9dec-f2adf86092a2",
+      "id": "dd71d081-d014-40c0-a27d-cd613f71b649",
       "name": "code_exercise_id"
     },
     {
@@ -359,10 +361,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3808,
-        32
+        3392,
+        -400
       ],
-      "id": "92a3f7a4-debf-42ab-b9f5-e8ed1555e962",
+      "id": "802551e3-c067-4008-bf6a-f31ef7965e14",
       "name": "update_exercise_id",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -392,10 +394,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        4048,
-        192
+        3632,
+        -240
       ],
-      "id": "58fc7510-2be9-484f-93db-682a45b5799c",
+      "id": "a5dc5880-4205-4f18-9a50-41d2cb76a38f",
       "name": "get_workout_exercise",
       "executeOnce": true,
       "credentials": {
@@ -413,10 +415,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2752,
-        32
+        2336,
+        -400
       ],
-      "id": "5f9aaea4-497e-44c1-89ed-4d1bb099c01c",
+      "id": "8f7ef4d5-5821-4178-bc6a-a5d3ed978c32",
       "name": "code_json_output2"
     },
     {
@@ -428,10 +430,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        2064,
-        32
+        1648,
+        -400
       ],
-      "id": "5588bfe0-afd1-4369-9a1b-6b7c1104d446",
+      "id": "022ad323-521e-4b8a-8f8c-ce027960295a",
       "name": "ai_agent_exercise_info"
     },
     {
@@ -441,10 +443,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4416,
-        192
+        4000,
+        -240
       ],
-      "id": "a58f31a2-cee5-4e36-84dc-a09ce323dc0e",
+      "id": "8836134c-c75e-4349-a545-8040a9832188",
       "name": "code_workout_exercise"
     },
     {
@@ -468,10 +470,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        4224,
-        192
+        3808,
+        -240
       ],
-      "id": "cb09959a-cc76-4a26-a25a-f5e44cfedc40",
+      "id": "f9870f70-a473-4121-bf82-8832c0c43d90",
       "name": "get_workout_types",
       "executeOnce": true,
       "credentials": {
@@ -623,10 +625,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2448,
-        32
+        2032,
+        -400
       ],
-      "id": "8bd6e831-7100-4abe-b3ac-65a52d9e9052",
+      "id": "de804be2-e401-4bd7-b830-8da43d849f80",
       "name": "append_new_exercise",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -737,10 +739,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        4640,
-        192
+        4224,
+        -240
       ],
-      "id": "55fc0341-bbac-4ab9-a9ac-e4a4caa05ddd",
+      "id": "68bbf2af-57c4-4474-924d-293625e8ca6d",
       "name": "append_workout_exercise",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -756,25 +758,25 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5712,
-        208
+        5296,
+        -224
       ],
-      "id": "fb74b5eb-37e7-4720-a16f-de651b65112d",
+      "id": "e840ed52-b357-4e24-aa57-26edbaa2a4f6",
       "name": "code_generate_success_message"
     },
     {
       "parameters": {
-        "respondWith": "text",
-        "responseBody": "={{ $json.response_text }}",
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ response_text: $json.response_text, output: $json.response_text }) }}",
         "options": {}
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        6384,
-        0
+        5968,
+        -432
       ],
-      "id": "60b42994-26aa-4467-a25f-822a62987208",
+      "id": "fd31a7f9-f56a-4585-9e9e-d84d3e09943b",
       "name": "Respond to Webhook",
       "disabled": true
     },
@@ -944,10 +946,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        5504,
-        208
+        5088,
+        -224
       ],
-      "id": "9410dc4d-73cc-418d-a246-276c2037dfc4",
+      "id": "284f9910-d0d5-4b03-a368-4f7d8ad5e725",
       "name": "update_exercise_frequency",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -963,10 +965,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5296,
-        208
+        4880,
+        -224
       ],
-      "id": "8facf8d0-6223-4f9d-a041-8185a83ed0d6",
+      "id": "d605b753-8985-4877-b189-62990a40fce8",
       "name": "code_calculate_new_frequency"
     },
     {
@@ -974,10 +976,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        2944,
-        176
+        2528,
+        -256
       ],
-      "id": "196c33b3-0251-4757-a4fd-2906f166feb9",
+      "id": "5c409a1c-0745-4fdb-be31-7fbcdcb845bf",
       "name": "merge_prompted_exercises"
     },
     {
@@ -985,10 +987,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        3808,
-        192
+        3392,
+        -240
       ],
-      "id": "aa40c5e9-d567-4911-8cd9-dc6a518976e3",
+      "id": "8e2e45bd-b31e-4013-9f52-047e681929e2",
       "name": "merge_new_exerciseid"
     },
     {
@@ -1000,10 +1002,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        5136,
-        224
+        4720,
+        -208
       ],
-      "id": "4456d8b6-df4b-4722-81b2-c403ccf7078a",
+      "id": "e2e20d09-0884-4b78-bf4d-67bceb3d4df0",
       "name": "Merge"
     },
     {
@@ -1027,10 +1029,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        4864,
-        208
+        4448,
+        -224
       ],
-      "id": "bb681e00-e643-4dda-836d-5efd5b9f6548",
+      "id": "1b72a507-13c2-43ab-aaab-fe30141d4d20",
       "name": "get_exercise_list2",
       "executeOnce": true,
       "credentials": {
@@ -1079,10 +1081,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        48,
-        0
+        -368,
+        -432
       ],
-      "id": "6ae4d6e8-4442-4e3b-8377-a5f574534fcc",
+      "id": "3b0f2c1b-fc31-40ab-9b85-0f63551304a7",
       "name": "route_by_intent"
     },
     {
@@ -1106,10 +1108,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        496,
-        -288
+        80,
+        -720
       ],
-      "id": "0b008d80-c413-47de-86ac-c3cd4561ccf7",
+      "id": "8075e581-dfb9-4590-a05d-0c36c7047f2f",
       "name": "get_exercise_catalog",
       "executeOnce": true,
       "credentials": {
@@ -1140,10 +1142,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        704,
-        -288
+        288,
+        -720
       ],
-      "id": "06898200-e723-4b92-a732-470d1d6b3337",
+      "id": "632acb67-92ea-411a-ab70-3d164c8ecb89",
       "name": "get_recent_workouts",
       "executeOnce": true,
       "credentials": {
@@ -1160,10 +1162,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        912,
-        -320
+        496,
+        -752
       ],
-      "id": "ee628e4f-c183-4379-8b58-b03f97691b25",
+      "id": "330d967a-ce1f-4224-a0e2-f3ab73724472",
       "name": "code_workout_generator"
     },
     {
@@ -1173,10 +1175,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3552,
-        -448
+        3136,
+        -880
       ],
-      "id": "6fa3cbc4-db59-4650-88e2-a841fb75bb8c",
+      "id": "f6ff599e-1e26-4c1f-8665-6d18d0558858",
       "name": "code_format_suggestion"
     },
     {
@@ -1186,10 +1188,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        736,
-        16
+        320,
+        -416
       ],
-      "id": "ff546ea9-103c-419e-8579-2b332e17d3a3",
+      "id": "d12eeb13-7389-4627-9910-74d1811e69a4",
       "name": "code_json_output"
     },
     {
@@ -1220,10 +1222,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        288,
-        -128
+        -128,
+        -560
       ],
-      "id": "e44945e8-d45d-4d2f-86d0-889b64cc3bea",
+      "id": "5902cdcf-ac55-4724-94dc-77f2ab022df3",
       "name": "if_generate_or_modify",
       "alwaysOutputData": false
     },
@@ -1234,10 +1236,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1152,
-        -144
+        736,
+        -576
       ],
-      "id": "ebb6ba28-a513-435e-8464-6eb39eb935d2",
+      "id": "0e24c275-60d9-4660-80c5-d846f77b0729",
       "name": "code_handle_modify"
     },
     {
@@ -1261,10 +1263,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        512,
-        -144
+        96,
+        -576
       ],
-      "id": "4b284b2b-5e3d-46f8-b22f-5ce2105fd8af",
+      "id": "e4866390-3580-4903-afa0-3285df966339",
       "name": "get_exercise_catalog_modify",
       "executeOnce": true,
       "credentials": {
@@ -1295,10 +1297,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        720,
-        -144
+        304,
+        -576
       ],
-      "id": "525e8aab-ecac-4afd-817b-49c228cfd460",
+      "id": "4390048f-e928-4a0d-ba06-6e0d30b6fb4f",
       "name": "get_recent_workouts_modify",
       "executeOnce": true,
       "credentials": {
@@ -1407,10 +1409,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3792,
-        -448
+        3376,
+        -880
       ],
-      "id": "1040ca0f-c60a-45e0-b98f-1f83287606b4",
+      "id": "fb34c441-7de0-431f-aa94-e9f1c44dc1d3",
       "name": "save_staged_workout",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -1448,10 +1450,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        928,
-        -144
+        512,
+        -576
       ],
-      "id": "777409fa-5dfd-4962-b54d-e779d6ee4893",
+      "id": "935b020c-5a09-48ea-8193-d64285b17047",
       "name": "get_staged_workout",
       "executeOnce": true,
       "credentials": {
@@ -1489,10 +1491,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        256,
-        16
+        -160,
+        -416
       ],
-      "id": "32225847-a2b5-49be-b14c-a9feac52f301",
+      "id": "128c3fd7-cf0a-4e5e-9c0b-9d0773673718",
       "name": "if_log_or_confirm"
     },
     {
@@ -1524,10 +1526,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        384,
-        240
+        -32,
+        -192
       ],
-      "id": "62353f56-4af7-4191-8965-80a8c4aae6f8",
+      "id": "2e189812-eb1a-43da-83c6-16a20eb50594",
       "name": "get_staged_workout_confirm",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -1543,10 +1545,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        560,
-        240
+        144,
+        -192
       ],
-      "id": "a4359a9d-54a8-4641-9ef8-829ec70e40fb",
+      "id": "47da0a2d-ab64-4622-b4ee-43956aa0e602",
       "name": "code_confirm_to_log"
     },
     {
@@ -1566,10 +1568,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        4192,
-        -432
+        3776,
+        -864
       ],
-      "id": "a3570893-a377-435a-9774-ab01abe2aca8",
+      "id": "2ea8902a-b353-49cc-8c25-927886ca6681",
       "name": "prepare_response"
     },
     {
@@ -1579,10 +1581,10 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        -160,
-        176
+        -576,
+        -256
       ],
-      "id": "dd4c890a-c866-4def-9499-9e515f852265",
+      "id": "7cb77ea4-a640-4a3f-887c-b976c2ad1b6e",
       "name": "Simple Memory"
     },
     {
@@ -1594,10 +1596,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -256,
-        0
+        -672,
+        -432
       ],
-      "id": "0df68b5f-855d-4ac9-942a-d7bb88780b2f",
+      "id": "f5651743-d12c-49fc-8c62-de12f32ce46f",
       "name": "ai_agent_prompt_process",
       "alwaysOutputData": true
     },
@@ -1614,10 +1616,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.3,
       "position": [
-        -256,
-        176
+        -672,
+        -256
       ],
-      "id": "ef1f5141-5e1c-4e82-9217-1bca95ef6d2a",
+      "id": "fc776e5b-19b0-457a-bb31-7ac8d65e4ac6",
       "name": "Anthropic Chat Model",
       "credentials": {
         "anthropicApi": {
@@ -1639,10 +1641,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.3,
       "position": [
-        1936,
-        240
+        1520,
+        -192
       ],
-      "id": "1eef78dc-efd7-49d2-9110-7c615dcf2241",
+      "id": "a290e55d-e229-48b3-810d-7064bae6d9ec",
       "name": "Anthropic Chat Model1",
       "credentials": {
         "anthropicApi": {
@@ -1678,10 +1680,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        1360,
-        -144
+        944,
+        -576
       ],
-      "id": "6be61134-a445-4d00-b013-2f9f58aa63d8",
+      "id": "b2ed4c40-36f8-4135-94af-af152322bfc2",
       "name": "check_needs_new_exercise"
     },
     {
@@ -1701,10 +1703,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1808,
-        -272
+        1392,
+        -704
       ],
-      "id": "be68e5a7-359a-4fa9-8e80-db992e8751f8",
+      "id": "11381921-8419-45af-9416-2a776c045437",
       "name": "prep_new_exercise_name"
     },
     {
@@ -1716,10 +1718,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        2016,
-        -272
+        1600,
+        -704
       ],
-      "id": "cd234963-1757-47bf-bf54-4b643c342824",
+      "id": "3eec14ab-1117-45a7-bd6c-535d3ed74b5f",
       "name": "ai_agent_exercise_info_modify"
     },
     {
@@ -1735,10 +1737,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.3,
       "position": [
-        2016,
-        -128
+        1600,
+        -560
       ],
-      "id": "e407b518-0024-453e-a1ef-9f8a75042cf1",
+      "id": "14c0b367-516b-4e94-8fa0-cee177647a82",
       "name": "Anthropic Chat Model2",
       "credentials": {
         "anthropicApi": {
@@ -1754,10 +1756,10 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        2112,
-        -128
+        1696,
+        -560
       ],
-      "id": "b7521793-d941-4ca8-abaa-bd2d3d1a943d",
+      "id": "5e9f5993-cd38-4bba-8fbc-8bd0afa216eb",
       "name": "Simple Memory2"
     },
     {
@@ -1768,10 +1770,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2368,
-        -272
+        1952,
+        -704
       ],
-      "id": "907eae6f-2beb-4620-8001-f7c1a9d3102d",
+      "id": "46622d26-ded0-4a4d-9442-736d2ffdc3c8",
       "name": "code_json_output3"
     },
     {
@@ -2066,10 +2068,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2576,
-        -272
+        2160,
+        -704
       ],
-      "id": "aa613d4d-ac97-4318-9b34-181b35fd6b2a",
+      "id": "6b026bff-5585-4be3-ae65-5db305c602b7",
       "name": "append_new_exercise_modify",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -2107,10 +2109,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2784,
-        -272
+        2368,
+        -704
       ],
-      "id": "cc6963fe-d3a4-458e-9e90-3a74ef8e8faa",
+      "id": "4c91fcea-dd27-4bfb-a3b8-d23919d441f3",
       "name": "get_pending_exercise_id_modify",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -2126,10 +2128,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2992,
-        -272
+        2576,
+        -704
       ],
-      "id": "3dfb37fa-2e3e-4efb-8e72-8b5be90ea58f",
+      "id": "ba9ef002-e9de-4aaf-96f8-0381008e54b4",
       "name": "code_exercise_id_modify"
     },
     {
@@ -2439,10 +2441,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3232,
-        -144
+        2752,
+        -704
       ],
-      "id": "a13882a5-10f0-48d7-a610-1499062735ab",
+      "id": "6c6b3d0c-5254-4393-877c-f91c157fd76e",
       "name": "update_exercise_id_modify",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -2458,10 +2460,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3216,
-        -272
+        2944,
+        -704
       ],
-      "id": "3196b98b-8f14-410b-ab9f-f5fb61614d4e",
+      "id": "6e0348c8-a639-4407-aa6c-4cc87029a0bb",
       "name": "code_resume_add"
     },
     {
@@ -2481,10 +2483,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        6064,
-        32
+        5648,
+        -400
       ],
-      "id": "5ac74124-7e8c-477a-be35-acf361fc3b5a",
+      "id": "52ed2694-6f55-41f1-b018-4aadded1a170",
       "name": "prepare_final_response"
     }
   ],
@@ -2604,11 +2606,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "update_exercise_id": {
-      "main": [
-        []
       ]
     },
     "get_workout_exercise": {
@@ -3113,11 +3110,6 @@
             "node": "update_exercise_id_modify",
             "type": "main",
             "index": 0
-          },
-          {
-            "node": "code_resume_add",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -3143,6 +3135,17 @@
           }
         ]
       ]
+    },
+    "update_exercise_id_modify": {
+      "main": [
+        [
+          {
+            "node": "code_resume_add",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -3150,7 +3153,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "8c978c80-0a3c-455e-b0f0-8ed7e3cc8996",
+  "versionId": "c46fcd53-11cf-4148-9e82-8f10a240b9d7",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "48993650a99eead3ee6bba9fa40731f296d1731d08b417e885f61d796ee98abd"

@@ -126,8 +126,10 @@ Phase 1 uses Google Sheets as the backend for ease of debugging. Phase 2 will mi
 | code_calculate_new_frequency | Code (JS) | Calculates new_frequency = current + 1 for each exercise |
 | update_exercise_frequency | Google Sheets Update | Writes incremented frequency back to exercise_list |
 | code_generate_success_message | Code (JS) | Formats success message with session summary |
-| prepare_final_response | Set (Edit Fields) | Single funnel in front of Respond to Webhook: `response_text = $json.response_text \|\| $json.output`. Both the LOG and GENERATE/MODIFY paths end here. |
-| Respond to Webhook | Respond to Webhook | Returns final text response to chat interface |
+| prepare_final_response | Set (Edit Fields) | Final node of every path: `response_text = $json.response_text \|\| $json.output`. The chat trigger runs in "When Last Node Finishes" mode, so this node's output is the chat reply. Both the LOG and GENERATE/MODIFY paths end here. |
+| Respond to Webhook | Respond to Webhook | **Disabled by design** — it passes its input through and is not the response path. See the response-path note below and §4.1. |
+
+**Response path.** The chat trigger runs in "When Last Node Finishes" mode, so whatever node executes last supplies the chat reply. Every path is built to end on `prepare_final_response`, and the chat page reads `response_text` from it. `Respond to Webhook` is present but disabled (it passes data through). Two consequences: a dead-end branch (for example a sheet update) must never be able to execute last, and switching the trigger to "Using Response Nodes" is not viable with the custom page — see §4.1.
 
 ### 1.5 AI Agent System Prompt — LOG Intent Schema
 
@@ -227,7 +229,7 @@ When `add` targets an exercise that fuzzy matching cannot find in the catalog, `
 1. `check_needs_new_exercise` routes flagged results into the extension branch (everything else goes straight to formatting).
 2. `prep_new_exercise_name` → `ai_agent_exercise_info_modify` generates the same metadata fields as the LOG-flow extension path.
 3. `code_json_output3` → `append_new_exercise_modify` writes the row with a `PENDING` ID (same ID strategy as §1.3) → `get_pending_exercise_id_modify` → `code_exercise_id_modify` calculates the real ID.
-4. From there the flow forks: `update_exercise_id_modify` replaces `PENDING` in the sheet while `code_resume_add` appends the new exercise (default 3 rounds x 10 reps, tagged NEW) to the staged workout and hands it to `code_format_suggestion`.
+4. `update_exercise_id_modify` replaces `PENDING` in the sheet, then `code_resume_add` appends the new exercise (default 3 rounds x 10 reps, tagged NEW) to the staged workout and hands it to `code_format_suggestion`. The two steps are strictly sequential: they used to run as a parallel fork, and because the reply is the last node's output, the dead-end sheet update could run last and leak its raw output into the chat.
 
 **Exercise Name Fuzzy Matching**
 
@@ -240,8 +242,8 @@ Both catalog lookup (`findInCatalog`) and history lookup (`findInHistory`) use t
 ### 2.5 n8n Workflow — GENERATE / MODIFY / CONFIRM Flows
 
 **Flow Summary**
-- **GENERATE:** route_by_intent TRUE → if_generate_or_modify TRUE → get_exercise_catalog → get_recent_workouts → code_workout_generator → code_format_suggestion → save_staged_workout → prepare_response → prepare_final_response → Respond to Webhook
-- **MODIFY:** route_by_intent TRUE → if_generate_or_modify FALSE → get_exercise_catalog_modify → get_recent_workouts_modify → get_staged_workout → code_handle_modify → check_needs_new_exercise → (catalog-extension branch when flagged) → code_format_suggestion → save_staged_workout → prepare_response → prepare_final_response → Respond to Webhook
+- **GENERATE:** route_by_intent TRUE → if_generate_or_modify TRUE → get_exercise_catalog → get_recent_workouts → code_workout_generator → code_format_suggestion → save_staged_workout → prepare_response → prepare_final_response (reply)
+- **MODIFY:** route_by_intent TRUE → if_generate_or_modify FALSE → get_exercise_catalog_modify → get_recent_workouts_modify → get_staged_workout → code_handle_modify → check_needs_new_exercise → (catalog-extension branch when flagged) → code_format_suggestion → save_staged_workout → prepare_response → prepare_final_response (reply)
 - **CONFIRM:** route_by_intent FALSE → if_log_or_confirm FALSE → get_staged_workout_confirm → code_confirm_to_log → code_json_output → (existing LOG pipeline from split_out_exercise onward)
 
 **Node Reference — GENERATE / MODIFY / CONFIRM Flows**
@@ -267,9 +269,9 @@ Both catalog lookup (`findInCatalog`) and history lookup (`findInHistory`) use t
 | code_json_output3 | Code (JS) | Parses the metadata agent's JSON |
 | append_new_exercise_modify | Google Sheets Append | Writes the new catalog row with a PENDING ID |
 | get_pending_exercise_id_modify | Google Sheets Get | Finds the PENDING row |
-| code_exercise_id_modify | Code (JS) | Calculates the next exercise_id; forks to the next two nodes in parallel |
-| update_exercise_id_modify | Google Sheets Update | Replaces PENDING with the real ID |
-| code_resume_add | Code (JS) | Appends the newly created exercise to the staged workout and resumes the add |
+| code_exercise_id_modify | Code (JS) | Calculates the next exercise_id |
+| update_exercise_id_modify | Google Sheets Update | Replaces PENDING with the real ID (runs before code_resume_add) |
+| code_resume_add | Code (JS) | Appends the newly created exercise to the staged workout and resumes the add. Reads upstream nodes by name, not from its input. |
 | if_log_or_confirm | IF | log intent → TRUE (code_json_output). confirm_log → FALSE (confirm path). |
 | get_staged_workout_confirm | Google Sheets Get | Reads staged workout by session_id for CONFIRM flow |
 | code_confirm_to_log | Code (JS) | Converts staged exercises into LOG format; reads body_part_focus for workout_type_name |
@@ -385,7 +387,11 @@ The backend returns plain text; the page reconstructs the card client-side by ma
 | Add new exercise during MODIFY (needs_new_exercise) | Feature gap | Was: an exercise not in the catalog was silently skipped on `add`. Now creates the catalog entry via AI-generated metadata and resumes the add (§2.4). | Done |
 | Silent failure on a failed modify action | Bug | A failed replace / suggest_replacements / replace_selection set `error_message`, but the formatter never read it, so the unchanged workout re-rendered with no feedback. Fixed in two places: `code_format_suggestion` renders a `Note:` line, and the chat page parses and displays it as a warning banner. | Done |
 | Regenerate preserves the original request | Improvement | Regenerate replays body_part_focus, volume_logic and workout_size from `staged_workout.original_request_json`. | Done |
-| Race condition around Respond to Webhook | Bug | `code_exercise_id_modify` forks into `update_exercise_id_modify` and `code_resume_add` in parallel, which can race the webhook response. The two response branches now share a single `prepare_final_response` node, which was the prerequisite; switching the chat trigger to "Using Response Nodes" mode and retesting the fork is still outstanding. | Open |
+| Race in the needs_new_exercise fork | Bug | `code_exercise_id_modify` forked into `update_exercise_id_modify` and `code_resume_add`; in last-node mode the sheet update could run last, so its raw output (`{"row_number":..,"exercise_id":..,...}`) appeared as the chat reply after adding a new exercise. Fixed by making the fork sequential (§2.4). General rule: never leave a dead-end branch that can execute last. | Done |
+| "Using Response Nodes" chat mode | Decision | Considered as a way to decouple the reply from execution order. Tested: with the trigger in that mode and `Respond to Webhook` enabled, the custom chat page received `{"executionStarted":true,"executionId":...}` immediately and the execution hung waiting on the response node, while the n8n editor chat panel worked — so an editor-only test is misleading. Reverted; `Respond to Webhook` stays disabled and the reply stays the last node's output. | Closed — won't do |
+| Remove of an unknown exercise fails silently | Bug | `remove` sets no error when the name or index matches nothing, so the unchanged workout re-renders without a Note (the same class of bug fixed for replace). | Not started |
+| Agent truncates exercise names on replace | Bug | "Replace 1.5 rep leg press with lunges" was parsed as `exercise_name: "leg press"`, so the replace failed with a Note. Needs a prompt fix so the agent uses the exact name from the suggestion. | Not started |
+| Mixed LLM model versions | Maintenance | `ai_agent_exercise_info_modify` runs on an older Claude Sonnet version than the other two agents. Align or document why. | Not started |
 | Replace with a brand-new (non-catalog) exercise | Feature gap | Unlike `add`, `replace` has no catalog-extension path. Needs `replace` to set `needs_new_exercise` with a target index, and `code_resume_add` to splice at an index instead of pushing. | Not started |
 | Composition & equipment constraints in GENERATE | Feature gap | Requests like "3 exercises: 1 pull, 1 push, 1 leg, dumbbells only" are not honoured; the generator filters by body part only. Needs the agent schema to emit `pattern_requirements` and `equipment_filter`, and a bucket-and-pick generator. `original_request_json` means regenerate would inherit these automatically. | Not started |
 | Store weights used per exercise | Feature gap | Record the load used (squat, bench press, hip thrust…) to track progress. | Not started |
