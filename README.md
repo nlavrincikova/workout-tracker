@@ -6,6 +6,8 @@ A chat-driven fitness tracker built on n8n. It logs workouts through natural con
 
 Companion repo: analytics built on the data this agent produces → [workout-analysis](https://github.com/nlavrincikova/workout-analysis)
 
+**Write-up:** [`CASE_STUDY.md`](./CASE_STUDY.md) — two real production incidents and how I debugged them.
+
 ---
 
 ## What it does
