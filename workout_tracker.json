@@ -11,10 +11,10 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.4,
       "position": [
-        -832,
-        -432
+        -160,
+        1648
       ],
-      "id": "56ec66d0-64ba-42b4-881a-4f7ba8221425",
+      "id": "aafe475c-dafb-4d4a-9eaf-f044e8aed663",
       "name": "When chat message received",
       "webhookId": "REDACTED-REGENERATED-ON-IMPORT"
     },
@@ -35,10 +35,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        832,
-        -432
+        1504,
+        1648
       ],
-      "id": "bb6685ea-87c3-4c4b-9a1e-c587fae997b3",
+      "id": "e774aa3a-12af-46a0-99dd-e1a417a7ab7c",
       "name": "edit_exercise_name"
     },
     {
@@ -62,10 +62,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1040,
-        -432
+        1712,
+        1648
       ],
-      "id": "7a3f49fc-3a26-42f3-bedc-43c0d77b2248",
+      "id": "de980aca-1bfc-46ff-aa4d-6d56fb94dda5",
       "name": "get_exercise_list",
       "executeOnce": true,
       "credentials": {
@@ -84,10 +84,10 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        608,
-        -416
+        1280,
+        1664
       ],
-      "id": "caf5e242-01b2-4db8-9c93-e8a5c9443255",
+      "id": "db2dc285-518b-4bbf-9d39-698862f54007",
       "name": "split_out_exercise"
     },
     {
@@ -97,10 +97,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1248,
-        -432
+        1920,
+        1648
       ],
-      "id": "a0b8947b-9ef6-4ab9-8b27-dd5c197de647",
+      "id": "68c3faec-5c95-4d6d-b43a-0071c108f25d",
       "name": "code_exercise_match"
     },
     {
@@ -130,10 +130,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        1424,
-        -384
+        2096,
+        1696
       ],
-      "id": "5b21ee7d-5260-4dd6-ba15-150075cdb3f5",
+      "id": "e74332c1-c607-48b9-9e26-a6aa7dd46bd3",
       "name": "filter_new_exercise"
     },
     {
@@ -143,10 +143,10 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        1760,
-        -192
+        2432,
+        1888
       ],
-      "id": "3496f74e-6d13-4381-9f0f-20784656a813",
+      "id": "c0a42252-910d-42cd-b25d-ab7a422474b4",
       "name": "Simple Memory1"
     },
     {
@@ -178,10 +178,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2752,
-        -256
+        3424,
+        1824
       ],
-      "id": "c3416751-3e30-4eaf-9bdb-fe3cb9793750",
+      "id": "dc249c57-c573-4d6f-ab1c-036a773fb71c",
       "name": "get_pending_exercise_id",
       "executeOnce": true,
       "credentials": {
@@ -198,10 +198,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2960,
-        -256
+        3632,
+        1824
       ],
-      "id": "dd71d081-d014-40c0-a27d-cd613f71b649",
+      "id": "fcf6e700-aa98-4cc4-8c97-9ba48c367ed2",
       "name": "code_exercise_id"
     },
     {
@@ -361,10 +361,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3392,
-        -400
+        4064,
+        1680
       ],
-      "id": "802551e3-c067-4008-bf6a-f31ef7965e14",
+      "id": "27a02998-d5f0-4d77-b94e-b0d6790257d7",
       "name": "update_exercise_id",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -394,10 +394,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3632,
-        -240
+        4304,
+        1840
       ],
-      "id": "a5dc5880-4205-4f18-9a50-41d2cb76a38f",
+      "id": "cca11e1d-23a7-4783-82fd-a7356a4141a5",
       "name": "get_workout_exercise",
       "executeOnce": true,
       "credentials": {
@@ -415,10 +415,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2336,
-        -400
+        3008,
+        1680
       ],
-      "id": "8f7ef4d5-5821-4178-bc6a-a5d3ed978c32",
+      "id": "5d92def5-9ce9-475f-98ba-62959c6a2260",
       "name": "code_json_output2"
     },
     {
@@ -430,10 +430,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        1648,
-        -400
+        2320,
+        1680
       ],
-      "id": "022ad323-521e-4b8a-8f8c-ce027960295a",
+      "id": "955e6622-5425-47a0-9d53-9025157a8dc9",
       "name": "ai_agent_exercise_info"
     },
     {
@@ -443,10 +443,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4000,
-        -240
+        4672,
+        1840
       ],
-      "id": "8836134c-c75e-4349-a545-8040a9832188",
+      "id": "daee96f4-f310-49c4-89d7-f665f729f6fc",
       "name": "code_workout_exercise"
     },
     {
@@ -470,10 +470,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3808,
-        -240
+        4480,
+        1840
       ],
-      "id": "f9870f70-a473-4121-bf82-8832c0c43d90",
+      "id": "96325124-8fdb-4083-ba26-50a582680a26",
       "name": "get_workout_types",
       "executeOnce": true,
       "credentials": {
@@ -625,10 +625,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2032,
-        -400
+        2704,
+        1680
       ],
-      "id": "de804be2-e401-4bd7-b830-8da43d849f80",
+      "id": "1bb0ebc1-6b2e-4bc6-90e9-4ef9f7521b23",
       "name": "append_new_exercise",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -739,10 +739,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        4224,
-        -240
+        4896,
+        1840
       ],
-      "id": "68bbf2af-57c4-4474-924d-293625e8ca6d",
+      "id": "06913311-8314-4e33-b573-36506c62fb1f",
       "name": "append_workout_exercise",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -758,10 +758,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5296,
-        -224
+        5968,
+        1856
       ],
-      "id": "e840ed52-b357-4e24-aa57-26edbaa2a4f6",
+      "id": "50b99eb5-a8b1-499b-8758-15e4be357c0c",
       "name": "code_generate_success_message"
     },
     {
@@ -773,10 +773,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        5968,
-        -432
+        6640,
+        1648
       ],
-      "id": "fd31a7f9-f56a-4585-9e9e-d84d3e09943b",
+      "id": "6b04c33c-5171-493f-9c5d-2792c6be5924",
       "name": "Respond to Webhook",
       "disabled": true
     },
@@ -946,10 +946,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        5088,
-        -224
+        5760,
+        1856
       ],
-      "id": "284f9910-d0d5-4b03-a368-4f7d8ad5e725",
+      "id": "e230bd3b-6e2c-4a7d-9a5b-62147ee88937",
       "name": "update_exercise_frequency",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -965,10 +965,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4880,
-        -224
+        5552,
+        1856
       ],
-      "id": "d605b753-8985-4877-b189-62990a40fce8",
+      "id": "9d71df4f-00a5-4234-9be8-cd588ba23eba",
       "name": "code_calculate_new_frequency"
     },
     {
@@ -976,10 +976,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        2528,
-        -256
+        3200,
+        1824
       ],
-      "id": "5c409a1c-0745-4fdb-be31-7fbcdcb845bf",
+      "id": "f117f724-4b25-48b8-b7f9-20d55f6c61eb",
       "name": "merge_prompted_exercises"
     },
     {
@@ -987,10 +987,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        3392,
-        -240
+        4064,
+        1840
       ],
-      "id": "8e2e45bd-b31e-4013-9f52-047e681929e2",
+      "id": "0f8fbf5d-12ac-4048-9b50-c4485d92e0b0",
       "name": "merge_new_exerciseid"
     },
     {
@@ -1002,10 +1002,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        4720,
-        -208
+        5392,
+        1872
       ],
-      "id": "e2e20d09-0884-4b78-bf4d-67bceb3d4df0",
+      "id": "a950c3b3-a61a-4d86-890a-1b2aa161b085",
       "name": "Merge"
     },
     {
@@ -1029,10 +1029,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        4448,
-        -224
+        5120,
+        1856
       ],
-      "id": "1b72a507-13c2-43ab-aaab-fe30141d4d20",
+      "id": "ba303a49-5c3b-4171-ac79-9d5215ee4570",
       "name": "get_exercise_list2",
       "executeOnce": true,
       "credentials": {
@@ -1081,10 +1081,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -368,
-        -432
+        304,
+        1648
       ],
-      "id": "3b0f2c1b-fc31-40ab-9b85-0f63551304a7",
+      "id": "85016cad-1e16-49d3-86ca-698f6457e85d",
       "name": "route_by_intent"
     },
     {
@@ -1108,10 +1108,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        80,
-        -720
+        752,
+        1360
       ],
-      "id": "8075e581-dfb9-4590-a05d-0c36c7047f2f",
+      "id": "5042af0d-21e3-4ff3-8e65-3dcaedabae98",
       "name": "get_exercise_catalog",
       "executeOnce": true,
       "credentials": {
@@ -1142,10 +1142,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        288,
-        -720
+        960,
+        1360
       ],
-      "id": "632acb67-92ea-411a-ab70-3d164c8ecb89",
+      "id": "96d28826-4ff2-4868-9cce-df806850894e",
       "name": "get_recent_workouts",
       "executeOnce": true,
       "credentials": {
@@ -1162,10 +1162,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        496,
-        -752
+        1168,
+        1328
       ],
-      "id": "330d967a-ce1f-4224-a0e2-f3ab73724472",
+      "id": "6480f1e3-00fd-4059-b0e1-a43c68013b8a",
       "name": "code_workout_generator"
     },
     {
@@ -1175,10 +1175,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3136,
-        -880
+        3808,
+        1200
       ],
-      "id": "f6ff599e-1e26-4c1f-8665-6d18d0558858",
+      "id": "ee909b04-1f31-4636-8d16-de640bc58bf4",
       "name": "code_format_suggestion"
     },
     {
@@ -1188,10 +1188,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        320,
-        -416
+        992,
+        1664
       ],
-      "id": "d12eeb13-7389-4627-9910-74d1811e69a4",
+      "id": "2766ca44-744e-4cc8-ac63-b3be7f558187",
       "name": "code_json_output"
     },
     {
@@ -1222,10 +1222,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -128,
-        -560
+        544,
+        1520
       ],
-      "id": "5902cdcf-ac55-4724-94dc-77f2ab022df3",
+      "id": "97a71530-cb71-4cbd-9725-04af1ce43f2f",
       "name": "if_generate_or_modify",
       "alwaysOutputData": false
     },
@@ -1236,10 +1236,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        736,
-        -576
+        1408,
+        1504
       ],
-      "id": "0e24c275-60d9-4660-80c5-d846f77b0729",
+      "id": "503a5a39-d1c4-489b-b6c2-c989ca78ebfd",
       "name": "code_handle_modify"
     },
     {
@@ -1263,10 +1263,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        96,
-        -576
+        768,
+        1504
       ],
-      "id": "e4866390-3580-4903-afa0-3285df966339",
+      "id": "e9c324f9-a6b8-4da8-ad10-d24ac6cfc3bc",
       "name": "get_exercise_catalog_modify",
       "executeOnce": true,
       "credentials": {
@@ -1297,10 +1297,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        304,
-        -576
+        976,
+        1504
       ],
-      "id": "4390048f-e928-4a0d-ba06-6e0d30b6fb4f",
+      "id": "b538da31-e43c-4317-9d92-0e8a81efb607",
       "name": "get_recent_workouts_modify",
       "executeOnce": true,
       "credentials": {
@@ -1409,10 +1409,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3376,
-        -880
+        4048,
+        1200
       ],
-      "id": "fb34c441-7de0-431f-aa94-e9f1c44dc1d3",
+      "id": "f40e22fc-6717-4940-aefe-6101aa796e4f",
       "name": "save_staged_workout",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -1450,10 +1450,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        512,
-        -576
+        1184,
+        1504
       ],
-      "id": "935b020c-5a09-48ea-8193-d64285b17047",
+      "id": "bae8f465-c80a-4ea6-a8ab-d437631b14b7",
       "name": "get_staged_workout",
       "executeOnce": true,
       "credentials": {
@@ -1491,10 +1491,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -160,
-        -416
+        512,
+        1664
       ],
-      "id": "128c3fd7-cf0a-4e5e-9c0b-9d0773673718",
+      "id": "ab348cad-f043-4d49-805e-5dda4cc7625c",
       "name": "if_log_or_confirm"
     },
     {
@@ -1526,10 +1526,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -32,
-        -192
+        640,
+        1888
       ],
-      "id": "2e189812-eb1a-43da-83c6-16a20eb50594",
+      "id": "1d56c44f-0454-4866-84d8-34b33192b7ba",
       "name": "get_staged_workout_confirm",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -1545,10 +1545,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        144,
-        -192
+        816,
+        1888
       ],
-      "id": "47da0a2d-ab64-4622-b4ee-43956aa0e602",
+      "id": "c61b18f6-ac92-404e-87bd-f8f549299fea",
       "name": "code_confirm_to_log"
     },
     {
@@ -1568,10 +1568,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        3776,
-        -864
+        4448,
+        1216
       ],
-      "id": "2ea8902a-b353-49cc-8c25-927886ca6681",
+      "id": "6355df59-3fb7-453c-95d9-f2fa132198b2",
       "name": "prepare_response"
     },
     {
@@ -1581,10 +1581,10 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        -576,
-        -256
+        96,
+        1824
       ],
-      "id": "7cb77ea4-a640-4a3f-887c-b976c2ad1b6e",
+      "id": "b0fb91f8-66ee-465d-af7f-f3b3ddb2bda1",
       "name": "Simple Memory"
     },
     {
@@ -1596,10 +1596,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -672,
-        -432
+        0,
+        1648
       ],
-      "id": "f5651743-d12c-49fc-8c62-de12f32ce46f",
+      "id": "0347718f-a843-483c-968c-c738c9067b57",
       "name": "ai_agent_prompt_process",
       "alwaysOutputData": true
     },
@@ -1616,10 +1616,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.3,
       "position": [
-        -672,
-        -256
+        0,
+        1824
       ],
-      "id": "fc776e5b-19b0-457a-bb31-7ac8d65e4ac6",
+      "id": "d2dc835d-3122-45ff-9550-fbea00960336",
       "name": "Anthropic Chat Model",
       "credentials": {
         "anthropicApi": {
@@ -1641,10 +1641,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.3,
       "position": [
-        1520,
-        -192
+        2192,
+        1888
       ],
-      "id": "a290e55d-e229-48b3-810d-7064bae6d9ec",
+      "id": "0fe0ef8a-6252-482b-8b76-b338d07896a5",
       "name": "Anthropic Chat Model1",
       "credentials": {
         "anthropicApi": {
@@ -1680,10 +1680,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        944,
-        -576
+        1616,
+        1504
       ],
-      "id": "b2ed4c40-36f8-4135-94af-af152322bfc2",
+      "id": "f784811e-32b3-4d79-a31f-f10999d86339",
       "name": "check_needs_new_exercise"
     },
     {
@@ -1703,10 +1703,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1392,
-        -704
+        2064,
+        1376
       ],
-      "id": "11381921-8419-45af-9416-2a776c045437",
+      "id": "adb389c6-9a5d-40c1-8ce8-fb50db99f069",
       "name": "prep_new_exercise_name"
     },
     {
@@ -1718,29 +1718,29 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        1600,
-        -704
+        2272,
+        1376
       ],
-      "id": "3eec14ab-1117-45a7-bd6c-535d3ed74b5f",
+      "id": "eef25ea6-601a-4a05-8ddf-994f84fd86ce",
       "name": "ai_agent_exercise_info_modify"
     },
     {
       "parameters": {
         "model": {
           "__rl": true,
+          "value": "claude-sonnet-4-6",
           "mode": "list",
-          "value": "claude-sonnet-4-5-20250929",
-          "cachedResultName": "Claude Sonnet 4.5"
+          "cachedResultName": "Claude Sonnet 4.6"
         },
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.3,
       "position": [
-        1600,
-        -560
+        2272,
+        1520
       ],
-      "id": "14c0b367-516b-4e94-8fa0-cee177647a82",
+      "id": "e6320fae-4cc2-4522-826a-2a7c436a16f3",
       "name": "Anthropic Chat Model2",
       "credentials": {
         "anthropicApi": {
@@ -1756,10 +1756,10 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        1696,
-        -560
+        2368,
+        1520
       ],
-      "id": "5e9f5993-cd38-4bba-8fbc-8bd0afa216eb",
+      "id": "1e793761-4753-472c-8a06-f9c6d2663e3e",
       "name": "Simple Memory2"
     },
     {
@@ -1770,10 +1770,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1952,
-        -704
+        2624,
+        1376
       ],
-      "id": "46622d26-ded0-4a4d-9442-736d2ffdc3c8",
+      "id": "0676dec4-296f-447c-8576-70dc17eebcbe",
       "name": "code_json_output3"
     },
     {
@@ -2068,10 +2068,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2160,
-        -704
+        2832,
+        1376
       ],
-      "id": "6b026bff-5585-4be3-ae65-5db305c602b7",
+      "id": "94f09644-04a8-48a9-a0d0-7882e6f30f39",
       "name": "append_new_exercise_modify",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -2109,10 +2109,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2368,
-        -704
+        3040,
+        1376
       ],
-      "id": "4c91fcea-dd27-4bfb-a3b8-d23919d441f3",
+      "id": "c03c4730-d22c-4bc7-8981-891b741ef5aa",
       "name": "get_pending_exercise_id_modify",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -2128,10 +2128,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2576,
-        -704
+        3248,
+        1376
       ],
-      "id": "ba9ef002-e9de-4aaf-96f8-0381008e54b4",
+      "id": "c86ad839-8dbf-49f8-92a7-c0c748021679",
       "name": "code_exercise_id_modify"
     },
     {
@@ -2441,10 +2441,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2752,
-        -704
+        3424,
+        1376
       ],
-      "id": "6c6b3d0c-5254-4393-877c-f91c157fd76e",
+      "id": "22228d0b-aa3c-4bda-90e2-26a8c4286c6c",
       "name": "update_exercise_id_modify",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -2460,10 +2460,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2944,
-        -704
+        3616,
+        1376
       ],
-      "id": "6e0348c8-a639-4407-aa6c-4cc87029a0bb",
+      "id": "71aa54ed-90e0-48bf-a6bf-25aa8aeb92e3",
       "name": "code_resume_add"
     },
     {
@@ -2483,10 +2483,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        5648,
-        -400
+        6320,
+        1680
       ],
-      "id": "52ed2694-6f55-41f1-b018-4aadded1a170",
+      "id": "e8d3d8ad-1c39-401d-b6de-1ab74bbd3eb6",
       "name": "prepare_final_response"
     }
   ],
@@ -3153,7 +3153,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "c46fcd53-11cf-4148-9e82-8f10a240b9d7",
+  "versionId": "e4da789d-cbcd-4f8a-bc27-c7dca5c7979b",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "48993650a99eead3ee6bba9fa40731f296d1731d08b417e885f61d796ee98abd"
