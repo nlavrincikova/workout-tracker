@@ -359,7 +359,7 @@ Users often generate a workout in the morning and want to confirm it later. With
 - Warning banner at the top of the card when the backend reports a failed modify action
 - Per-exercise rows: name, NEW badge, rounds x amount rep_type, Body Part Focus, Muscles Worked, Movement Pattern
 - Replacement suggestion card with 3 options and clickable 1/2/3 buttons
-- Clickable quick-reply buttons in the card footer
+- Clickable quick-reply buttons in the card footer. Buttons with a blank to fill (Replace, Suggest replacements, Add, Remove) only fill the message box and pre-select the blank; Confirm and Regenerate send immediately
 - Plain-text responses rendered in a monospace bubble
 - Auto-resizing textarea, Enter to send, Shift+Enter for newline
 - Mobile-friendly responsive layout using `100dvh`
@@ -396,7 +396,7 @@ The backend returns plain text; the page reconstructs the card client-side by ma
 | Composition & equipment constraints in GENERATE | Feature gap | Requests like "3 exercises: 1 pull, 1 push, 1 leg, dumbbells only" are not honoured; the generator filters by body part only. Needs the agent schema to emit `pattern_requirements` and `equipment_filter`, and a bucket-and-pick generator. `original_request_json` means regenerate would inherit these automatically. | Not started |
 | Store weights used per exercise | Feature gap | Record the load used (squat, bench press, hip thrust…) to track progress. | Not started |
 | Progressive overload on weight | Improvement | Let "progressive" progress weight as well as reps. Depends on the item above. | Not started |
-| Chat quick-reply behaviour | Improvement | Templates such as "Suggest replacements for [exercise]" currently send immediately; they should fill the text box for the user to complete and send. | Not started |
+| Chat quick-reply behaviour | Improvement | Footer reply buttons that need a blank filled in (Replace, Suggest replacements, Add, Remove) used to send immediately. Fixed: they now only fill the message box and pre-select the blank so the user types over it and sends manually; Confirm and Regenerate, which have nothing to fill in, still send immediately. Known limit: Replace has two blanks and only the first is pre-selected. | Done |
 | staged_workout cleanup | Maintenance | Rows accumulate per session and are never purged. Needs a scheduled cleanup or TTL. | Not started |
 | Multiple sessions in one prompt | Limitation | Logging two workout sessions in one message is not supported. | Not started |
 | Session persistence across devices | Limitation | The session ID lives in localStorage, so a workout generated on one device cannot be confirmed on another. | Known |
